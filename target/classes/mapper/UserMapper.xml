@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.qingyun.dao.UserDao">     
+
+    <select id="findUserList" resultType="com.qingyun.entity.User">
+        select * from stock.user   
+    </select> 
+    
+    <select id="getUserListByName"  parameterType="java.lang.String"  resultType="com.qingyun.entity.User">
+        select * from stock.user  
+    </select> 
+    
+    <select id="userList" parameterType="map"  resultType="com.qingyun.entity.User">
+        select * from stock.user where 1=1 
+        <!-- 判断条件参数是否为空 -->
+	    <if test="username != null and username != ''">
+	        and username like '%${username}%'
+	    </if>
+	    <!-- 判断条件参数是否为某值 -->
+        limit #{startIndex} , #{pageSize}
+    </select> 
+    
+    <select id="getTotalListSize"  parameterType="java.lang.String" resultType="Integer">
+        select count(id) from stock.user  where 1=1  
+        <!-- 判断条件参数是否为空 -->
+	    <if test="username != null and username != ''">
+	        and username like '%${username}%'
+	    </if>
+	    <!-- 判断条件参数是否为某值 -->
+    </select> 
+    
+    <delete id="deleteUserByid" parameterType="java.lang.String">
+		delete from stock.user where id=#{id}
+	</delete>
+    
+    <select id="getUserById" parameterType="java.lang.String" resultType="com.qingyun.entity.User">
+		select * from stock.user where id=#{id}
+	</select>
+	
+	<select id="getUserListEqualsName"  parameterType="java.lang.String"  resultType="com.qingyun.entity.User">
+        select * from stock.user where username = #{username}
+    </select> 
+    
+    <update id="updateUser"  parameterType="com.qingyun.entity.User">
+        update stock.user SET username=#{username},password=#{password} where id=#{id}
+    </update>
+    
+    <!-- 主键自增长的插入 -->
+    <insert id="addUser" parameterType="com.qingyun.entity.User" useGeneratedKeys="true" keyProperty="id">
+         insert into stock.user(username,password) values(
+	         #{username},
+	         #{password}
+         );
+    </insert>
+
+    
+    
+</mapper>

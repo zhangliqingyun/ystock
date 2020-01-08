@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="renderer" content="webkit" />
+    <title>用户管理</title>  
+    <link rel="shortcut icon" th:href="@{/common/images/headlogo.ico}"/>         
+    <link th:href="@{/hplus/css/plugins/layui/css/layui.css?v=4.1.0}" rel="stylesheet" />  
+</head> 
+  
+<body>
+	<div class="conditionDiv" style="margin-top:10px;margin-left:10px">
+          <button class="layui-btn" data-type="addUser"><i class="layui-icon">&#xe654;</i>添加</button>        
+          <button class="layui-btn" data-type="editUser"><i class="layui-icon">&#xe642;</i>编辑</button>         
+          <button class="layui-btn" data-type="deleteUser"><i class="layui-icon">&#xe640;</i>删除</button>      
+		  <div style="float:right;padding-right:10px">    
+			  <div class="layui-inline" >         
+			    <input class="layui-input" placeholder="请输入用户名" name="username" id="username" autocomplete="off">
+			  </div>
+		      <button class="layui-btn" data-type="reload"><i class="layui-icon">&#xe615;</i>搜索</button> 
+	      </div>  
+	</div>     
+	 
+	<table class="layui-hide" id="userTableGrid" lay-filter="user"></table>
+	<script th:src="@{/hplus/js/jquery.min.js?v=2.1.4}"></script>     
+    <script th:src="@{/hplus/css/plugins/layui/layui.js}"></script>   
+
+	<script>  
+	   var layer = null;     
+	   layui.use(['layer', 'table'], function(){
+		  var $ = layui.jquery, layer = layui.layer; //独立版的layer无需执行这一句
+		  var table = layui.table;        
+		  table.render({//方法级渲染
+		    elem: '#userTableGrid',
+		    url: '/user/userList',
+		    cols: [[   
+		      {checkbox: true, fixed: true},
+		      {field:'id', title: 'ID',fixed: true},    
+		      {field:'username', title: '用户名'},
+		      {field:'password', title: '密码'},
+		    ]],  
+		    id: 'userTable',  
+		    page: true,
+		    height : 'full-70'    
+		  });                      
+		         
+		  var $ = layui.$, active = {
+		    reload: function(){        //执行重载
+		    	reloadData(); 
+		    },
+		    addUser: function(){    //添加用户
+		        addUser();
+		    },
+		    editUser: function(){    //编辑用户
+		    	editUser();
+		    },
+		    deleteUser: function(){    //删除用户
+		    	deleteUser();
+		    }
+		  };    
+		     
+		  $('.conditionDiv .layui-btn').on('click', function(){   //按钮监听事件
+		     var type = $(this).data('type');                     //根据data-type定义调用active的对应方法
+		     active[type] ? active[type].call(this) : ''; 
+		  });
+		  
+		  //搜索条件框div添加回车监听事件  
+		  $("#username").bind("keydown",function(e){   
+			    var theEvent = e || window.event;     // 兼容FF和IE和Opera    
+			    var code = theEvent.keyCode || theEvent.which || theEvent.charCode;    
+			    if (code == 13) {                     //回车执行查询
+			    	reloadData();              
+			    }    
+		   });       
+		});
+	   
+	   function editUser(){
+		   var checkStatus = layui.table.checkStatus('userTable');
+	       var data = checkStatus.data; 
+	       if(0 == data.length){
+	        	layer.msg('请选中需要编辑的记录',{
+	        		icon: 2,   //1成功（绿色）2错误（红叉） 3问号（黄色）4 锁（灰色）  5伤心脸（红色）  
+	        		time: 1600 //2秒关闭（如果不配置，默认是3秒）
+	            });            
+	       } else if(data.length > 1){
+	        	layer.msg('只能选中编辑一行记录',{
+	        		icon: 2,   //1成功（绿色）2错误（红叉） 3问号（黄色）4 锁（灰色）  5伤心脸（红色）  
+	        		time: 1600 //2秒关闭（如果不配置，默认是3秒）
+	            });     
+	       } else{  
+	    	   parent.layer.open({      //加parent，在最外层显示弹窗，父页面需要加layer初始化
+		   			closeBtn : 1,
+		   			type : 2,     
+		   			maxmin: true,
+		   			title : "编辑用户",
+		   			skin : 'layui-layer-lan', //加上边框
+		   			area : [ '650px', '450px' ], //宽高
+		   			content :'/user/editPage?id='+data[0].id,
+		   		    end: function(e){
+		   		    	reloadData();     
+		   		    }    
+	   		   });       
+	       }       
+	   }   
+	   
+	   function addPersonalCenter(){
+		   alert(1);  
+	   }
+	   function addUser(){  
+		   parent.layer.open({        //加parent，在最外层显示弹窗，父页面需要加layer初始化        
+	   			closeBtn : 1,
+	   			type : 2,     
+	   			maxmin: true,
+	   			title : "添加用户",
+	   			skin : 'layui-layer-lan', //加上边框
+	   			area : [ '650px', '450px' ], //宽高
+	   			content :'/user/addPage',
+	   		    end: function(e){
+	   		    	reloadData();     
+	   		    }  
+  		   });       
+	   }
+	   
+	   function reloadData(){
+		   var username = layui.$('#username');    
+		   layui.table.reload('userTable', {       
+	         page: {
+	           curr: 1 //重新从第 1 页开始
+	         },
+	         where: {
+	        	 username: username.val()
+	         }   
+	      }, 'data');
+	   }
+	   
+	   function deleteUser(){
+		   var checkStatus = layui.table.checkStatus('userTable');
+	       var data = checkStatus.data; 
+	       if(0 == data.length){
+	        	layer.msg('请选中需要删除的记录',{
+	        		icon: 2,   //1成功（绿色）2错误（红叉） 3问号（黄色）4 锁（灰色）  5伤心脸（红色）  
+	        		time: 1600 //2秒关闭（如果不配置，默认是3秒）
+	            });            
+	       }else{
+	        	layer.confirm('真的删除选中记录？', function(index){
+	                layer.close(index);
+	                deleteUserByChoose(data);
+	            });   
+	       }       
+	   }
+	   
+	   function deleteUserByChoose(data){   
+		   var rowArray = [];// 当前删除行的数组
+		   for(var i = 0;i < data.length;i++){
+				rowArray.push(data[i].id);
+		   }     
+		   if (rowArray.length != 0){  
+		         var ids = rowArray.toString();
+		         layui.$.ajax({  
+	       			url:"/user/deleteUserByids",
+	       			data:{"ids":ids},
+	       			type: 'POST',
+	       			success:function(data){
+	       				var message = JSON.parse(data);  
+			        	if(message.type == '200'){  
+			        		layer.msg('删除成功',{
+			              		 icon: 1,   //1成功（绿色）2错误（红叉） 3问号（黄色）4 锁（灰色）  5伤心脸（红色）  
+			              		 time: 1000 //2秒关闭（如果不配置，默认是3秒）
+			                    }, function(){
+			                   	reloadData();         
+			                  });
+			        	}else{
+			        		layer.msg('删除失败',{
+			              		 icon: 5,   //1成功（绿色）2错误（红叉） 3问号（黄色）4 锁（灰色）  5伤心脸（红色）  
+			              		 time: 1000 //2秒关闭（如果不配置，默认是3秒）
+			                });
+			        	} 
+	       			},
+	       			error:function(errorData){
+		        		layer.msg('删除错误',{
+		              		 icon: 2,   //1成功（绿色）2错误（红叉） 3问号（黄色）4 锁（灰色）  5伤心脸（红色）  
+		              		 time: 1000 //2秒关闭（如果不配置，默认是3秒）
+		                });
+	       			}
+	       		});  
+		    }
+	   }
+	</script>
+
+</body>
+
+</html>
