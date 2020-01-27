@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.qingyun.entity.User;
-import com.qingyun.service.LicenseService;
 import com.qingyun.service.UserService;
 /**
  * @Description index的控制类
@@ -24,8 +23,6 @@ public class IndexController {
 	@Autowired
 	UserService userService;
 	
-	@Autowired
-	LicenseService licenseService;
 	
 	/**
 	 * @Description 跳转到主页的方法
