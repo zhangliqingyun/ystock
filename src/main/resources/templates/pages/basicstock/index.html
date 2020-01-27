@@ -36,15 +36,26 @@
 		    url: '/basicStock/basicStockList',
 		    cols: [[   
 		      {checkbox: true, fixed: true},
-		      {field:'id', title: 'ID',fixed: true},    
+		      {field:'id', title: 'ID',fixed: true},      
 		      {field:'stockCode', title: '股票代码 '},
 		      {field:'stockName', title: '股票名称'},
 		      {field:'appearAddrName', title: '指数类型'},
- 		      {field:'addDate', title: '录入时间'}       
-		    ]],  
+ 		      {field:'addDate', title: '录入时间',templet:'<div>{{ layui.util.toDateString(d.addDate, "yyyy-MM-dd HH:mm:ss") }}</div>'}       
+		    ]],    
 		    id: 'stockTable',  
 		    page: true,
-		    height : 'full-70'    
+		    height : 'full-70',
+		    done:function(res, curr, count){     
+	    	   for(var i = 0;i<res.data.length;i++){
+	    	      var appearAddrCode = res.data[i].appearAddrCode;  
+	    	      if(appearAddrCode == 's_sh'){    //控制大盘指数记录不能删除         
+	    	         var index = res.data[i]['LAY_TABLE_INDEX'];
+	    	         $(".layui-table tr[data-index="+index+"] input[type='checkbox']").prop('disabled',true);
+	    	         $(".layui-table tr[data-index="+index+"] input[type='checkbox']").next().addClass('layui-btn-disabled');
+	    	         $('.layui-table tr[data-index=' + index + '] input[type="checkbox"]').prop('name', 'caib');
+	    	      }    
+	    	   }        
+		    }
 		  });                      
 		         
 		  var $ = layui.$, active = {
@@ -120,10 +131,12 @@
 	   function deleteStockByChoose(data){   
 		   var rowArray = [];// 当前删除行的数组
 		   for(var i = 0;i < data.length;i++){
-				rowArray.push(data[i].id);
+			   if(data[i].stockCode != '000001'){
+				   rowArray.push(data[i].id);
+			   }
 		   }     
 		   if (rowArray.length != 0){  
-		         var ids = rowArray.toString();
+		         var ids = rowArray.toString();      
 		         layui.$.ajax({  
 	       			url:"/basicStock/deleteStockByids",
 	       			data:{"ids":ids},
@@ -151,6 +164,11 @@
 		                });
 	       			}
 	       		});  
+		    }else{
+		    	layer.msg('请选中需要删除的记录',{
+	        		icon: 2,   //1成功（绿色）2错误（红叉） 3问号（黄色）4 锁（灰色）  5伤心脸（红色）  
+	        		time: 1600 //2秒关闭（如果不配置，默认是3秒）
+	            });          
 		    }
 	   }
 	</script>

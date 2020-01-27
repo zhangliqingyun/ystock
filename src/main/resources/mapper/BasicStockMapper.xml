@@ -18,6 +18,7 @@
 	        and (stock_name like '%${stockName}%' or stock_code like '%${stockName}%' ) 
 	    </if>
 	    <!-- 判断条件参数是否为某值 -->
+	    order by add_date desc 
         limit #{startIndex} , #{pageSize}
     </select> 
     
@@ -41,9 +42,13 @@
 	         #{stockName},
 	         #{appearAddrCode},
 	         #{appearAddrName},
-	         #{addDate}
+	         #{addDate,jdbcType=TIMESTAMP}
          );
     </insert>
+    
+    <select id="findByStockCodeAndAppearAddrCode"  parameterType="java.lang.String"  resultMap="BasicStock">
+        select id from stock.basic_stock where stock_code = #{stockCode} and  appear_addr_code = #{appearAddrCode}
+    </select> 
     
     
 </mapper>

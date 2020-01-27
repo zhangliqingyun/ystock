@@ -1,6 +1,15 @@
 package com.qingyun.entity;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.URLConnection;
+import java.util.HashMap;
 import java.util.Map;
+
+import com.alibaba.fastjson.JSON;
 
 /**
  * @Description 给App返回的实体类
@@ -60,9 +69,6 @@ public class Message {
 	public void setDetail(String detail) {
 		this.detail = detail;
 	}
-
-	
-	  
 	
 	
 }

@@ -1,7 +1,17 @@
 package com.qingyun.controller;
 
+import java.io.IOException;
+
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.ParseException;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -10,7 +20,6 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.alibaba.fastjson.JSONObject;
 import com.qingyun.entity.BasicStock;
-import com.qingyun.entity.User;
 import com.qingyun.service.BasicStockService;
 
 /** 
@@ -83,6 +92,18 @@ public class BasicStockController {
 		return basicStockService.addBasicStock(basicStock);
 	}
 	
+    /**
+     * @Description 校验股票股票信息
+     * @author 张立增
+     * @Date 2020年1月27日 下午8:33:49
+     */
+	@RequestMapping(value = "/checkBasicStock", method = { RequestMethod.POST, RequestMethod.GET})
+	public String checkBasicStock(HttpServletRequest request) throws Exception {
+		String data = request.getParameter("data");    
+		BasicStock basicStock = JSONObject.parseObject(data, BasicStock.class);
+		return basicStockService.checkBasicStock(basicStock);
+	}
 	
+
 	
 }
