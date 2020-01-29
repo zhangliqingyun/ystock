@@ -104,6 +104,18 @@ public class BasicStockController {
 		return basicStockService.checkBasicStock(basicStock);
 	}
 	
+	/**
+	 * @Description 查询所有的股票记录
+	 * @author 张立增
+	 * @Date 2020年1月29日 下午11:12:09
+	 */
+	@RequestMapping(value = "/basicStockAllList", method = { RequestMethod.POST, RequestMethod.GET})
+	public String basicStockAllList(HttpServletRequest request) throws Exception {
+		return basicStockService.basicStockAllList();
+	}
+	
+	
+	
 
 	
 }

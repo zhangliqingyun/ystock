@@ -50,5 +50,15 @@
         select id from stock.basic_stock where stock_code = #{stockCode} and  appear_addr_code = #{appearAddrCode}
     </select> 
     
+    <select id="basicStockAll"   parameterType="java.lang.String" resultMap="BasicStock">
+         SELECT * FROM stock.basic_stock WHERE appear_addr_code <![CDATA[!= ]]>'s_sh'
+    </select> 
+    
+    <select id="findById"  parameterType="int"  resultMap="BasicStock">
+        select * from stock.basic_stock where id = #{id}
+    </select> 
+    
+    
+    
     
 </mapper>

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="renderer" content="webkit" />
+    <title>用户管理</title>  
+    <link rel="shortcut icon" th:href="@{/common/images/headlogo.ico}"/>         
+    <link th:href="@{/hplus/css/plugins/layui/css/layui.css?v=4.1.0}" rel="stylesheet" />  
+</head>   
+
+<body>
+	<form class="layui-form" action="" lay-filter="userForm" style="margin-top:15px"> 
+	
+	  <div class="layui-form-item">
+	    <label class="layui-form-label">股票选择</label>  
+	    <div class="layui-input-inline" style="width:430px">     
+	      <select name="basicStockId" id="basicStockId" lay-verify="basicStockId">
+			<option value=""></option>
+		  </select>
+	    </div>   
+	  </div>       
+	     
+	  <div class="layui-form-item">
+	    <label class="layui-form-label">交易日期</label>
+	    <div class="layui-input-block" style="width:430px">
+	      <input type="text" name="dataDate" id="dataDate" lay-verify="dataDate" placeholder="yyyy-MM-dd" autocomplete="off" class="layui-input">
+	    </div>
+	  </div>
+	  
+	  <div class="layui-form-item">   
+	   	<label class="layui-form-label">当前价格</label>  
+	    <div class="layui-input-block" style="width:430px">
+	      <input type="text" name="nowPrice" id="nowPrice" lay-verify="nowPrice" placeholder="请输入当前价格" autocomplete="off" class="layui-input">
+	    </div>
+	  </div>  
+	  
+	  <div class="layui-form-item">   
+	   	<label class="layui-form-label">上次价格</label>  
+	    <div class="layui-input-block" style="width:430px">
+	      <input type="text" name="lastPrice" id="lastPrice" lay-verify="lastPrice" placeholder="请输入上次价格" autocomplete="off" class="layui-input">
+	    </div>
+	  </div>    
+	  
+	  <div class="layui-form-item">
+	    <div class="layui-input-block">
+	      <button type="submit" class="layui-btn" lay-submit="" lay-filter="addStockData">保存</button>
+	    </div>
+	  </div>
+	</form>       
+	
+    <script th:src="@{/hplus/css/plugins/layui/layui.js}"></script>
+	<script>     
+	layui.use(['form', 'laydate'], function(){    
+		  var form = layui.form,
+		  laydate = layui.laydate,
+		  layer = layui.layer;
+		  laydate.render({//日期
+		    elem: '#dataDate'
+		  });
+          initStockCode();     
+          
+          form.verify({  //自定义验证规则
+        	stockCode: function(value){    
+           	  value = value.trim();
+              if(value.length == 0){
+                    return '股票选择不能为空';
+              }            
+            },
+        	dataDate: function(value){    
+        	  value = value.trim();
+              if(value.length == 0){
+                 return '交易日期不能为空';
+              }       
+            },
+            nowPrice: function(value){   
+        	  value = value.trim();
+        	  if(value.length == 0){
+                  return '当前价格不能为空';
+              } 
+        	  var patrn = /^\d+(\.\d+)?$/;
+        	  if (!patrn.exec(value)){
+        	      return '请输入合法的金额';
+        	  }
+            },
+            lastPrice: function(value){   
+          	  value = value.trim();
+          	  if(value.length == 0){
+                    return '上次价格不能为空';
+              }  
+        	  var patrn = /^\d+(\.\d+)?$/;
+        	  if (!patrn.exec(value)){
+        	      return '请输入合法的金额';
+        	  }     
+            }
+          });
+        
+		  //监听提交
+		  form.on('submit(addStockData)', function(data){  
+			  addStockData(data.field);
+			  return false;       
+		  });
+	 }); 
+	
+	function initStockCode(){
+		layui.$.ajax({  
+   			url:"/basicStock/basicStockAllList",
+   			type: 'POST',
+   			async: false,
+   			success:function(data){
+	        	if(null != data){  
+	   			 	data = JSON.parse(data);        
+	        		for(var i = 0;i < data.length;i++){
+	        			layui.$('#basicStockId').append(new Option(data[i].stockName, data[i].id));// 下拉菜单里添加元素
+	        		}    
+	        		layui.form.render("select");               
+	        	}else{
+	        		layer.msg('股票数据初始化失败',{
+	              		 icon: 5,   //1成功（绿色）2错误（红叉） 3问号（黄色）4 锁（灰色）  5伤心脸（红色）  
+	              		 time: 1000 //2秒关闭（如果不配置，默认是3秒）
+	                });
+	        	}    
+   			},  
+   			error:function(errorData){
+        		layer.msg('股票数据初始化错误',{
+              		 icon: 2,   //1成功（绿色）2错误（红叉） 3问号（黄色）4 锁（灰色）  5伤心脸（红色）  
+              		 time: 1000 //2秒关闭（如果不配置，默认是3秒）
+                }); 
+   			}
+   		});    
+	}
+	
+	function addStockData(data){   
+		layui.$.ajax({  
+   			url:"/stockData/addStockData",
+   			data:{"data":JSON.stringify(data)},
+   			type: 'POST',
+   			success:function(data){
+   				var message = JSON.parse(data);  
+	        	if(message.type == '200'){  
+	        		layer.msg('股票数据添加成功',{
+	              		 icon: 1,   //1成功（绿色）2错误（红叉） 3问号（黄色）4 锁（灰色）  5伤心脸（红色）  
+	              		 time: 1000 //2秒关闭（如果不配置，默认是3秒）
+	                    }, function(){
+	                       var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+	                       parent.layer.close(index); //再执行关闭
+	                  });        
+	        	}else{
+	        		layer.msg(message.msg,{
+	              		 icon: 5,   //1成功（绿色）2错误（红叉） 3问号（黄色）4 锁（灰色）  5伤心脸（红色）  
+	              		 time: 2800 //2秒关闭（如果不配置，默认是3秒）
+	                });   
+	        	} 
+   			},  
+   			error:function(errorData){
+        		layer.msg('股票数据添加错误',{
+              		 icon: 2,   //1成功（绿色）2错误（红叉） 3问号（黄色）4 锁（灰色）  5伤心脸（红色）  
+              		 time: 1000 //2秒关闭（如果不配置，默认是3秒）
+                }); 
+   			}
+   		});    
+	 }
+
+	</script>
+
+</body>
+
+</html>

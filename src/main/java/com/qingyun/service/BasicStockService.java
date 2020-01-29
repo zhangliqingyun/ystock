@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONObject;
 import com.qingyun.dao.BasicStockDao;
+import com.qingyun.dao.StockDataDao;
 import com.qingyun.entity.BasicStock;
 import com.qingyun.entity.Message;
 import com.qingyun.utils.PageUtils;
@@ -29,6 +30,9 @@ public class BasicStockService {
 
     @Autowired
     BasicStockDao basicStockDao;
+    
+    @Autowired
+    StockDataDao stockDataDao;
 
 	/**
 	 * @Description 查询股票列表的方法
@@ -58,6 +62,7 @@ public class BasicStockService {
 			String[] idArr = ids.split(",");
 			for (int i = 0; i < idArr.length; i++) {
 				basicStockDao.deleteStockByid(idArr[i]);
+				stockDataDao.deleteByBasicStockId(idArr[i]);
 			}
 			message.setType(Message.OK);
 			message.setMsg("删除股票成功");
@@ -153,6 +158,21 @@ public class BasicStockService {
 			}
 	   }
 	   return JSONObject.toJSONString(message);
+	}
+
+	/**
+	 * @Description 查询所有的股票记录
+	 * @author 张立增
+	 * @Date 2020年1月29日 下午11:12:09
+	 */
+	public String basicStockAllList() {
+		try {
+			List<BasicStock> list = basicStockDao.basicStockAll();
+			return JSONObject.toJSONString(list);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
     
 }

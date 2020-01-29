@@ -21,6 +21,10 @@ public interface BasicStockDao {
 
 	List<BasicStock> findByStockCodeAndAppearAddrCode(@Param("stockCode")String stockCode, @Param("appearAddrCode")String appearAddrCode);
 
+	List<BasicStock> basicStockAll();
+
+	List<BasicStock> findById(@Param("id")Integer id);
+
 	
 	
 }

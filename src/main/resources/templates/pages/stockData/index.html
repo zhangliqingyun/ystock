@@ -12,8 +12,10 @@
   
 <body>
 	<div class="conditionDiv" style="margin-top:10px;margin-left:10px">
-          <button class="layui-btn" data-type="addStock"><i class="layui-icon">&#xe654;</i>添加</button>               
-          <button class="layui-btn" data-type="deleteStock"><i class="layui-icon">&#xe640;</i>删除</button>      
+          <button class="layui-btn" data-type="addStockData"><i class="layui-icon">&#xe654;</i>添加</button>        
+          <button class="layui-btn" data-type="editStockData"><i class="layui-icon">&#xe642;</i>编辑</button>         
+          <button class="layui-btn" data-type="deleteStockData"><i class="layui-icon">&#xe640;</i>删除</button>      
+          <button class="layui-btn" data-type="batchUpload"><i class="layui-icon">&#xe62f;</i>批量导入</button>      
 		  <div style="float:right;padding-right:10px">    
 			  <div class="layui-inline" >         
 			    <input class="layui-input" placeholder="请输入股票代码或名称" name="stockName" id="stockName" autocomplete="off">
@@ -22,7 +24,7 @@
 	      </div>  
 	</div>     
 	 
-	<table class="layui-hide" id="basicStockTableGrid" lay-filter="basicStock"></table>
+	<table class="layui-hide" id="stockDataTableGrid" lay-filter="stockData"></table>
 	<script th:src="@{/hplus/js/jquery.min.js?v=2.1.4}"></script>     
     <script th:src="@{/hplus/css/plugins/layui/layui.js}"></script>   
 
@@ -32,41 +34,37 @@
 		  var $ = layui.jquery, layer = layui.layer; //独立版的layer无需执行这一句
 		  var table = layui.table;        
 		  table.render({//方法级渲染
-		    elem: '#basicStockTableGrid',
-		    url: '/basicStock/basicStockList',
+		    elem: '#stockDataTableGrid',
+		    url: '/stockData/stockDataList',
 		    cols: [[   
-		      {checkbox: true, fixed: true},
-		      {field:'id', title: 'ID',fixed: true},      
+		      {checkbox: true, fixed: true}, 
 		      {field:'stockCode', title: '股票代码 '},
 		      {field:'stockName', title: '股票名称'},
-		      {field:'appearAddrName', title: '指数类型'},
- 		      {field:'addDate', title: '录入时间',templet:'<div>{{ layui.util.toDateString(d.addDate, "yyyy-MM-dd HH:mm:ss") }}</div>'}       
-		    ]],    
-		    id: 'stockTable',  
+		      {field:'dataDate', title: '交易日期',templet:'<div>{{ layui.util.toDateString(d.dataDate, "yyyy-MM-dd") }}</div>'},
+		      {field:'nowPrice', title: '当前价格'},
+		      {field:'lastPrice', title: '上次价格'},
+		      {field:'diffPrice', title: '涨幅'},
+		    ]],  
+		    id: 'stockDataTable',  
 		    page: true,
-		    height : 'full-70',
-		    done:function(res, curr, count){     
-	    	   for(var i = 0;i<res.data.length;i++){
-	    	      var appearAddrCode = res.data[i].appearAddrCode;  
-	    	      if(appearAddrCode == 's_sh'){    //控制大盘指数记录不能删除         
-	    	         var index = res.data[i]['LAY_TABLE_INDEX'];
-	    	         $(".layui-table tr[data-index="+index+"] input[type='checkbox']").prop('disabled',true);
-	    	         $(".layui-table tr[data-index="+index+"] input[type='checkbox']").next().addClass('layui-btn-disabled');
-	    	         $('.layui-table tr[data-index=' + index + '] input[type="checkbox"]').prop('name', 'caib');
-	    	      }    
-	    	   }        
-		    }
+		    height : 'full-70'    
 		  });                      
 		         
 		  var $ = layui.$, active = {
 		    reload: function(){        //执行重载
 		    	reloadData(); 
 		    },
-		    addStock: function(){       //添加股票
-		        addStock();
+		    addStockData: function(){    //添加
+		    	addStockData();
 		    },
-		    deleteStock: function(){    //删除用户
-		    	deleteStock();
+		    editStockData: function(){    //编辑
+		    	editStockData();
+		    },
+		    deleteStockData: function(){    //删除
+		    	deleteStockData();
+		    },
+		    batchUpload: function(){        //批量导入
+		    	batchUpload();
 		    }
 		  };    
 		     
@@ -85,15 +83,44 @@
 		   });       
 		});
 	   
-	   function addStock(){  
+	   function editStockData(){
+		   var checkStatus = layui.table.checkStatus('stockDataTable');
+	       var data = checkStatus.data; 
+	       if(0 == data.length){
+	        	layer.msg('请选中需要编辑的记录',{
+	        		icon: 2,   //1成功（绿色）2错误（红叉） 3问号（黄色）4 锁（灰色）  5伤心脸（红色）  
+	        		time: 1600 //2秒关闭（如果不配置，默认是3秒）
+	            });            
+	       } else if(data.length > 1){
+	        	layer.msg('只能选中编辑一行记录',{
+	        		icon: 2,   //1成功（绿色）2错误（红叉） 3问号（黄色）4 锁（灰色）  5伤心脸（红色）  
+	        		time: 1600 //2秒关闭（如果不配置，默认是3秒）
+	            });     
+	       } else{  
+	    	   parent.layer.open({      //加parent，在最外层显示弹窗，父页面需要加layer初始化
+		   			closeBtn : 1,
+		   			type : 2,     
+		   			maxmin: true,
+		   			title : "编辑数据",
+		   			skin : 'layui-layer-lan', //加上边框
+		   			area : [ '650px', '450px' ], //宽高
+		   			content :'/stockName/editPage?id='+data[0].id,
+		   		    end: function(e){
+		   		    	reloadData();     
+		   		    }    
+	   		   });       
+	       }       
+	   }   
+	   
+	   function addStockData(){  
 		   parent.layer.open({        //加parent，在最外层显示弹窗，父页面需要加layer初始化        
 	   			closeBtn : 1,
 	   			type : 2,     
 	   			maxmin: true,
-	   			title : "添加股票",
+	   			title : "添加数据",
 	   			skin : 'layui-layer-lan', //加上边框
 	   			area : [ '650px', '450px' ], //宽高
-	   			content :'/basicStock/addPage',
+	   			content :'/stockData/addPage',
 	   		    end: function(e){
 	   		    	reloadData();     
 	   		    }  
@@ -102,7 +129,7 @@
 	   
 	   function reloadData(){
 		   var stockName = layui.$('#stockName');    
-		   layui.table.reload('stockTable', {       
+		   layui.table.reload('stockDataTable', {       
 	         page: {
 	           curr: 1 //重新从第 1 页开始
 	         },
@@ -112,8 +139,8 @@
 	      }, 'data');
 	   }
 	   
-	   function deleteStock(){
-		   var checkStatus = layui.table.checkStatus('stockTable');
+	   function deleteStockData(){
+		   var checkStatus = layui.table.checkStatus('stockDataTable');
 	       var data = checkStatus.data; 
 	       if(0 == data.length){
 	        	layer.msg('请选中需要删除的记录',{
@@ -123,22 +150,20 @@
 	       }else{
 	        	layer.confirm('真的删除选中记录？', function(index){
 	                layer.close(index);
-	                deleteStockByChoose(data);
+	                deleteUserByChoose(data);
 	            });   
 	       }       
 	   }
 	   
-	   function deleteStockByChoose(data){   
+	   function deleteUserByChoose(data){   
 		   var rowArray = [];// 当前删除行的数组
 		   for(var i = 0;i < data.length;i++){
-			   if(data[i].appearAddrCode != 's_sh'){     
-				   rowArray.push(data[i].id);
-			   }
+				rowArray.push(data[i].id);
 		   }     
 		   if (rowArray.length != 0){  
-		         var ids = rowArray.toString();      
+		         var ids = rowArray.toString();
 		         layui.$.ajax({  
-	       			url:"/basicStock/deleteStockByids",
+	       			url:"/stockData/deleteStockDataByids",
 	       			data:{"ids":ids},
 	       			type: 'POST',
 	       			success:function(data){
@@ -164,12 +189,14 @@
 		                });
 	       			}
 	       		});  
-		    }else{
-		    	layer.msg('请选中需要删除的记录',{
-	        		icon: 2,   //1成功（绿色）2错误（红叉） 3问号（黄色）4 锁（灰色）  5伤心脸（红色）  
-	        		time: 1600 //2秒关闭（如果不配置，默认是3秒）
-	            });          
 		    }
+	   }
+	   
+	   function batchUpload(){
+		   layer.msg('开发中...',{
+        		 icon: 2,   //1成功（绿色）2错误（红叉） 3问号（黄色）4 锁（灰色）  5伤心脸（红色）  
+        		 time: 1000 //2秒关闭（如果不配置，默认是3秒）
+           });      
 	   }
 	</script>
 

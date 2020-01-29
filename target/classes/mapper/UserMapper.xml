@@ -3,15 +3,15 @@
 <mapper namespace="com.qingyun.dao.UserDao">     
 
     <select id="findUserList" resultType="com.qingyun.entity.User">
-        select * from stock.user   
+        select * from stock.basic_user   
     </select> 
     
     <select id="getUserListByName"  parameterType="java.lang.String"  resultType="com.qingyun.entity.User">
-        select * from stock.user  
+        select * from stock.basic_user  
     </select> 
     
     <select id="userList" parameterType="map"  resultType="com.qingyun.entity.User">
-        select * from stock.user where 1=1 
+        select * from stock.basic_user where 1=1 
         <!-- 判断条件参数是否为空 -->
 	    <if test="username != null and username != ''">
 	        and username like '%${username}%'
@@ -21,7 +21,7 @@
     </select> 
     
     <select id="getTotalListSize"  parameterType="java.lang.String" resultType="Integer">
-        select count(id) from stock.user  where 1=1  
+        select count(id) from stock.basic_user  where 1=1  
         <!-- 判断条件参数是否为空 -->
 	    <if test="username != null and username != ''">
 	        and username like '%${username}%'
@@ -30,24 +30,24 @@
     </select> 
     
     <delete id="deleteUserByid" parameterType="java.lang.String">
-		delete from stock.user where id=#{id}
+		delete from stock.basic_user where id=#{id}
 	</delete>
     
     <select id="getUserById" parameterType="java.lang.String" resultType="com.qingyun.entity.User">
-		select * from stock.user where id=#{id}
+		select * from stock.basic_user where id=#{id}
 	</select>
 	
 	<select id="getUserListEqualsName"  parameterType="java.lang.String"  resultType="com.qingyun.entity.User">
-        select * from stock.user where username = #{username}
+        select * from stock.basic_user where username = #{username}
     </select> 
     
     <update id="updateUser"  parameterType="com.qingyun.entity.User">
-        update stock.user SET username=#{username},password=#{password} where id=#{id}
+        update stock.basic_user SET username=#{username},password=#{password} where id=#{id}
     </update>
     
     <!-- 主键自增长的插入 -->
     <insert id="addUser" parameterType="com.qingyun.entity.User" useGeneratedKeys="true" keyProperty="id">
-         insert into stock.user(username,password) values(
+         insert into stock.basic_user(username,password) values(
 	         #{username},
 	         #{password}
          );

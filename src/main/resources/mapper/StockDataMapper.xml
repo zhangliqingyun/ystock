@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.qingyun.dao.StockDataDao">     
+
+    <resultMap type="com.qingyun.entity.StockData" id="StockData">
+        <id property="id" column="id"/>
+        <result property="stockCode" column="stock_code"/>
+        <result property="stockName" column="stock_name"/>
+        <result property="dataDate" column="data_date"/>
+        <result property="nowPrice" column="now_price"/>
+        <result property="lastPrice" column="last_price"/>
+        <result property="diffPrice" column="diff_price"/>
+        <result property="basicStockId" column="basic_stock_id"/>
+    </resultMap>
+    
+    <select id="getMaxDateStockData"  resultMap="StockData">
+         SELECT * FROM (SELECT * FROM stock.stock_data ORDER BY data_date DESC LIMIT 10000000000 )  AS temp GROUP BY  temp.stock_code
+    </select> 
+    
+    <insert id="saveStockData" parameterType="java.util.List" useGeneratedKeys="true" keyProperty="id">
+	    insert into
+	        stock.stock_data(stock_code,stock_name,data_date,now_price,last_price,diff_price,basic_stock_id)
+	    values
+	    <foreach collection="list" item="item" index="index" separator=","> 
+	        (#{item.stockCode},#{item.stockName},#{item.dataDate,jdbcType=DATE},#{item.nowPrice},#{item.lastPrice},#{item.diffPrice},#{item.basicStockId})
+	    </foreach> 
+	</insert>
+	
+	<delete id="deleteByBasicStockId" parameterType="java.lang.String">
+		delete from stock.stock_data where basic_stock_id=#{basicStockId}
+	</delete>
+	
+	<select id="stockDataList" parameterType="map"  resultMap="StockData">
+        select * from stock.stock_data where 1=1 
+        <!-- 判断条件参数是否为空 -->
+	    <if test="stockName != null and stockName != ''">
+	        and (stock_name like '%${stockName}%' or stock_code like '%${stockName}%' ) 
+	    </if>
+	    <!-- 判断条件参数是否为某值 -->
+	    order by data_date desc 
+        limit #{startIndex} , #{pageSize}
+    </select> 
+    
+    <select id="getTotalListSize"  parameterType="java.lang.String" resultType="Integer">
+        select count(id) from stock.stock_data  where 1=1  
+        <!-- 判断条件参数是否为空 -->
+        <if test="stockName != null and stockName != ''">
+	        and (stock_name like '%${stockName}%' or stock_code like '%${stockName}%' ) 
+	    </if>
+	    <!-- 判断条件参数是否为某值 -->
+    </select> 
+   
+    <delete id="deleteStockDataByid" parameterType="java.lang.String">
+		delete from stock.stock_data where id=#{id}
+	</delete> 
+   
+    <select id="findByBasicStockIdAndDataDate"  parameterType="map"  resultMap="StockData">
+        select stock_name from stock.stock_data where basic_stock_id = #{basicStockId} and  data_date = #{dataDate}
+    </select> 
+   
+    <insert id="addStockData" parameterType="com.qingyun.entity.StockData" useGeneratedKeys="true" keyProperty="id">
+	    insert into
+	        stock.stock_data(stock_code,stock_name,data_date,now_price,last_price,diff_price,basic_stock_id)
+	    values
+	        (#{stockCode},#{stockName},#{dataDate,jdbcType=DATE},#{nowPrice},#{lastPrice},#{diffPrice},#{basicStockId})
+	</insert>
+   
+   
+    
+    
+</mapper>
