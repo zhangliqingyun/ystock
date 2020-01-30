@@ -140,7 +140,7 @@ public class ScheduledTask {
 	private void checkDataAndSave(List<BasicStock> list, List<StockData> nowStockData) {
 		if(list.size() == nowStockData.size()) {       //查询到的股票数据需要与股票数量一致，数组是有序的，可以这样进行判断
 			List<StockData> insertList = new ArrayList<StockData>();
-			List<StockData> maxDateStockData = stockDataDao.getMaxDateStockData();   //查询日期最多的股票数据
+			List<StockData> maxDateStockData = stockDataDao.getMaxDateStockData();   //查询日期最大的股票数据
 		    if(null != maxDateStockData && maxDateStockData.size() > 0) {    //没有查询到股票直接进行保存
 		    	for(int i = 0;i < nowStockData.size();i++) {
 		    	   String nowStockCode = list.get(i).getStockCode();         //数组是有序的，可以这样取

@@ -65,6 +65,11 @@
 	        (#{stockCode},#{stockName},#{dataDate,jdbcType=DATE},#{nowPrice},#{lastPrice},#{diffPrice},#{basicStockId})
 	</insert>
    
+    <update id="updateBasicStockId">
+        update stock.stock_data a,stock.basic_stock b SET a.basic_stock_id=b.id 
+        where a.basic_stock_id is null and b.appear_addr_code <![CDATA[!= ]]>'s_sh'
+        and a.stock_code = b.stock_code 
+    </update>
    
     
     

@@ -33,5 +33,7 @@ public interface StockDataDao {
 
 	void addStockData(StockData stockData);
 
+	void updateBasicStockId();
+
 
 }

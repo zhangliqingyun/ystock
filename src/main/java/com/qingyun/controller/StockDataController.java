@@ -1,11 +1,15 @@
 package com.qingyun.controller;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.alibaba.fastjson.JSONObject;
@@ -60,19 +64,6 @@ public class StockDataController{
 		return mv;
 	}
     
-    /**
-     * @Description 跳转到编辑股票数据页面的方法
-     * @author 张立增
-     * @Date 2020年1月29日 下午10:39:52
-     */
-	@RequestMapping("/editPage")
-	public ModelAndView editPage(HttpServletRequest request) {
-		ModelAndView mv = new ModelAndView("pages/stockData/edit");
-		String id = request.getParameter("id");    
-		mv.addObject("id", id);
-		return mv;
-	}
-    
 	/**
 	 * @Description 根据ids删除股票数据
 	 * @author 张立增
@@ -95,6 +86,40 @@ public class StockDataController{
 		StockData stockData = JSONObject.parseObject(data, StockData.class);
 		return stockDataService.addStockData(stockData);
 	}
+	
+	/**
+	 * @Description 跳转到批量导入数据页面
+	 * @author 张立增
+	 * @Date 2020年1月30日 下午4:39:20
+	 */
+    @RequestMapping(value = "/batchUploadPage")
+	public ModelAndView batchUploadPage() {
+		ModelAndView mv = new ModelAndView("pages/stockData/batchupload");
+		return mv;
+	}
+	
+    /**
+     * @Description 模板下载
+     * @author 张立增
+     * @Date 2020年1月30日 下午5:36:56
+     */
+    @RequestMapping(value={"/downTemplate"}, produces={"text/html;charset=UTF-8"})
+	@ResponseBody
+	public void downTemplate(HttpServletRequest request, HttpServletResponse response){
+		 response.setCharacterEncoding("UTF-8");
+		 stockDataService.downTemplate(response);
+	}
+    
+    /**
+     * @Description 上传股票数据
+     * @author 张立增
+     * @Date 2020年1月30日 下午6:04:04
+     */
+	@RequestMapping("/uploadStockData")  
+	public String uploadfile(@RequestParam("file") MultipartFile file, HttpServletRequest request,HttpServletResponse response) {
+		return stockDataService.uploadStockData(file,request,response);
+	}
+    
 	
 	
 	
