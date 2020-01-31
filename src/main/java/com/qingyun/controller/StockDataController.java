@@ -36,7 +36,7 @@ public class StockDataController{
 	*/
     @RequestMapping(value = "/index")
 	public ModelAndView index() {
-		ModelAndView mv = new ModelAndView("pages/stockData/index");
+		ModelAndView mv = new ModelAndView("pages/stockdata/index");
 		return mv;
 	}
     
@@ -60,7 +60,7 @@ public class StockDataController{
      */
     @RequestMapping(value = "/addPage")
 	public ModelAndView addPage() {
-		ModelAndView mv = new ModelAndView("pages/stockData/add");
+		ModelAndView mv = new ModelAndView("pages/stockdata/add");
 		return mv;
 	}
     
@@ -94,7 +94,7 @@ public class StockDataController{
 	 */
     @RequestMapping(value = "/batchUploadPage")
 	public ModelAndView batchUploadPage() {
-		ModelAndView mv = new ModelAndView("pages/stockData/batchupload");
+		ModelAndView mv = new ModelAndView("pages/stockdata/batchupload");
 		return mv;
 	}
 	

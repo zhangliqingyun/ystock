@@ -42,28 +42,34 @@
                             </ul>   
                         </div>
                         <div class="logo-element">yun</div>        
-                    </li>
+                    </li>   
                     <li>
                         <a href="#">
-                            <i class="fa fa-home"></i>
-                            <span class="nav-label">用户管理</span>
-                            <span class="fa arrow"></span>
+                            <i class="fa fa fa-institution"></i>
+                            <span class="nav-label">基础支撑</span>
+                            <span class="fa arrow"></span>   
                         </a>
-                        <ul class="nav nav-second-level">
+                        <ul class="nav nav-second-level">   
                             <li>
-                                <a class="J_menuItem"  th:href="@{/user/userPage}" data-index="0">用户列表</a>
-                            </li>        
+                                <a class="J_menuItem"  th:href="@{/user/userPage}" data-index="0">用户管理</a>
+                            </li>  
+                            <li>
+                                <a class="J_menuItem" th:href="@{/basicStock/index}">股票配置</a>
+                            </li>
+                            <li>
+                                <a class="J_menuItem" th:href="@{/stockData/index}">数据管理</a>
+                            </li>
                         </ul>
                     </li>
                     <li>
                         <a href="#">
                             <i class="fa fa fa-bar-chart-o"></i>
-                            <span class="nav-label">基础支持</span>
+                            <span class="nav-label">数据分析</span>
                             <span class="fa arrow"></span>
                         </a>
                         <ul class="nav nav-second-level">
                             <li>
-                                <a class="J_menuItem" th:href="@{/basicStock/index}">股票配置</a>
+                                <a class="J_menuItem" th:href="@{/dataAnalysis/macroIndex}">宏观一览</a>
                             </li>
                             <li>
                                 <a class="J_menuItem" th:href="@{/stockData/index}">数据管理</a>
