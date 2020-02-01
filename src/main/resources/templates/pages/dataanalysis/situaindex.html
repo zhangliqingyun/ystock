@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="renderer" content="webkit" />
+    <title>用户管理</title>  
+    <link rel="shortcut icon" th:href="@{/common/images/headlogo.ico}"/>         
+    <link th:href="@{/hplus/css/plugins/layui/css/layui.css?v=4.1.0}" rel="stylesheet" />  
+</head> 
+  
+<body>
+	<div class="conditionDiv" style="margin-top:10px;border-bottom:1px solid #E7EAEC;height:45px" class="layui-form">    
+		  <div style="margin-right:10px;margin-left:10px">                          
+			  <div class="layui-inline">              
+			     <div class="layui-input-inline" style="width: 150px;">          
+			   	    <select name="basicStockId" id="basicStockId" lay-verify="basicStockId" lay-filter="basicStockId"></select>
+			   	 </div>   
+			   	 <div class="layui-input-inline" style="width: 150px;">
+			   	    <input type="text" name="startDate" id="startDate" lay-verify="startDate" placeholder="起始日期" autocomplete="off" class="layui-input">
+			     </div>  
+			     <div class="layui-input-inline">&nbsp;&nbsp;-&nbsp;&nbsp;</div>
+			     <div class="layui-input-inline" style="width: 150px;">          
+			   	    <input type="text" name="endDate" id="endDate" lay-verify="endDate" placeholder="截止日期" autocomplete="off" class="layui-input">
+			     </div>       
+			  </div> 
+		      <div style="float:right;padding-top:3px" id="radioGroup">                           
+				 <div id="month" class="layui-form-checkbox layui-form-checked"><span>月份统计</span><i class="layui-icon">&#xe62c;</i></div>
+				 <div id="quarter" class="layui-form-checkbox"><span>季度统计</span><i class="layui-icon">&#xe62c;</i></div>    
+				 <div id="year" class="layui-form-checkbox"><span>年度统计</span><i class="layui-icon">&#xe62c;</i></div>
+		      </div>            
+	      </div>                  
+	</div>    
+	
+	<div id="chartsDiv" style="height:400px;width:100%"></div>       
+	 
+	<table class="layui-hide" id="tableGrid" lay-filter="tableGrid"></table>
+	<script th:src="@{/hplus/js/jquery.min.js?v=2.1.4}"></script>     
+    <script th:src="@{/hplus/css/plugins/layui/layui.js}"></script>   
+    <script th:src="@{/common/js/echarts.js}"></script>
+    <script th:src="@{/common/js/macarons.js}"></script> 
+
+	<script>  
+	   var layer = null; 
+	   var checkDiv = "month";    //当前选中的tab
+	   layui.use(['layer', 'laydate','form'], function(){
+		  var $ = layui.jquery,
+		  form = layui.form,   
+		  laydate = layui.laydate,
+		  layer = layui.layer; //独立版的layer无需执行这一句
+		  
+		  laydate.render({//起始日期
+			  elem: '#startDate',
+			  done: function(value, date, endDate){
+				  if(null != value && value.length > 0){
+						var startTime = new Date(value).getTime();
+						var endTime = new Date($('#endDate').val()).getTime();
+						if (startTime > endTime) {   //日期不符合，赋初始值  
+							layer.msg('起始日期不能大于截止日期',{
+			              		icon: 2,   //1成功（绿色）2错误（红叉） 3问号（黄色）4 锁（灰色）  5伤心脸（红色）  
+			              		time: 1000 //2秒关闭（如果不配置，默认是3秒）
+			                }, function(){    
+			                	var myDate = new Date();
+							    var year = myDate.getFullYear();
+							    var month = myDate.getMonth()+1;
+							    if(month < 10){
+								   month = "0"+month;
+							    }
+							    var day = myDate.getDate();
+							    if(day < 10){
+								   day = "0"+day;
+							    }
+							    var lastYear = year-1;    
+							    $("#startDate").val(lastYear+"-01-01");   
+			                });        
+						}else{
+							window.setTimeout("loadData()",10);  //延迟加载，防止改变的日期没有赋完值
+						}
+				  }else{
+					  window.setTimeout("loadData()",10);  //延迟加载，防止改变的日期没有赋完值  
+				  } 
+			  }
+		  });
+		  
+		  laydate.render({//截止日期
+			  elem: '#endDate',          
+			  done: function(value, date, endDate){
+				  if(null != value && value.length > 0){
+						var endTime = new Date(value).getTime();
+						var startTime = new Date($('#startDate').val()).getTime();
+						if (endTime < startTime) {    //日期不符合，赋初始值
+							layer.msg('截止日期不能小于起始日期',{
+			              		icon: 2,   //1成功（绿色）2错误（红叉） 3问号（黄色）4 锁（灰色）  5伤心脸（红色）  
+			              		time: 1000 //2秒关闭（如果不配置，默认是3秒）
+			                }, function(){   
+			                	var myDate = new Date();
+							    var year = myDate.getFullYear();
+							    var month = myDate.getMonth()+1;
+							    if(month < 10){
+								   month = "0"+month;
+							    }
+							    var day = myDate.getDate();
+							    if(day < 10){
+								   day = "0"+day;
+							    }     
+							    $("#endDate").val(year+"-"+month+"-"+day);   
+			                });    
+						}else{
+							window.setTimeout("loadData()",10);  //延迟加载，防止改变的日期没有赋完值 
+						}
+				  }else{
+					  window.setTimeout("loadData()",10);  //延迟加载，防止改变的日期没有赋完值              
+				  } 
+			  }       
+		  });  
+		  
+		  form.on('select(basicStockId)', function(data){   //下拉选择改变触发
+			  loadData();
+		  });     
+  
+		  initDate();            //给日期赋初始值
+		  initStockCode();       //初始化股票下拉
+		  listenRadioCheck();    //监听月季度年按钮选择
+		  loadData();
+	   });
+	   
+	   function initStockCode(){
+			layui.$.ajax({  
+	   			url:"/basicStock/basicStockAllList",
+	   			type: 'POST',
+	   			async: false,
+	   			success:function(data){
+		        	if(null != data){  
+		   			 	data = JSON.parse(data);        
+		        		for(var i = 0;i < data.length;i++){
+		        			layui.$('#basicStockId').append(new Option(data[i].stockName, data[i].id));// 下拉菜单里添加元素
+		        		}    
+		        		layui.form.render("select");                        
+		        	}else{
+		        		layer.msg('股票数据初始化失败',{
+		              		 icon: 5,   //1成功（绿色）2错误（红叉） 3问号（黄色）4 锁（灰色）  5伤心脸（红色）  
+		              		 time: 1000 //2秒关闭（如果不配置，默认是3秒）
+		                });
+		        	}    
+	   			},  
+	   			error:function(errorData){
+	        		layer.msg('股票数据初始化错误',{
+	              		 icon: 2,   //1成功（绿色）2错误（红叉） 3问号（黄色）4 锁（灰色）  5伤心脸（红色）  
+	              		 time: 1000 //2秒关闭（如果不配置，默认是3秒）
+	                }); 
+	   			}
+	   		});    
+	   }
+	   
+	   //监听来回切按钮事件的方法  
+	   function listenRadioCheck(){   
+			$('#radioGroup div').click(function(){      
+				var checkDivTemp = this.id;  
+				if(checkDivTemp != checkDiv){
+					checkDiv = checkDivTemp;    
+					loadData();   //查询数据
+					if($(this).hasClass('layui-form-checked')) {} else {
+						$(this).addClass('layui-form-checked').siblings().removeClass('layui-form-checked');
+					}
+				}       
+			});
+	   }
+	   
+	   function loadData(){
+           var startDate = $("#startDate").val();     
+		   var endDate = $("#endDate").val(); 
+  		   if(null != startDate && startDate.length > 0 && null != endDate && endDate.length > 0){
+  			  var startTime = new Date(startDate).getTime();
+  		      var endTime = new Date(endDate).getTime();
+  		      if (endTime < startTime) {
+  				layer.msg('截止日期不能小于起始日期',{
+               		 icon: 2,   //1成功（绿色）2错误（红叉） 3问号（黄色）4 锁（灰色）  5伤心脸（红色）  
+               		 time: 1000 //2秒关闭（如果不配置，默认是3秒）
+                 });
+  				return;
+  			  }
+		   }
+		   var basicStockId = $("#basicStockId").val(); 
+		   var endUrl = "";
+		   if("month" == checkDiv){
+			   endUrl = "monthDataSitua"; 
+		   }else if("quarter" == checkDiv){
+			   endUrl = "quarterDataSitua"; 
+		   }else{
+			   endUrl = "yearDataSitua"; 
+		   }
+		   layui.$.ajax({  
+	   		   url:"/dataAnalysis/"+endUrl,
+	   		   data:{"startDate":startDate,"endDate":endDate,"basicStockId":basicStockId},
+	   		   type: 'POST',
+	   		   success:function(data){
+	   			    if(null != data){
+	   			    	data = JSON.parse(data);    
+	   			    	var xAxis = [];
+	   			    	var averagePriceArr = [];
+	   			    	var gainsPriceArr = [];
+	   			    	for(var i = 0;i < data.length;i++){
+	   			    		xAxis.push(data[i].dataDate);
+	   			    		averagePriceArr.push(data[i].averagePrice);
+	   			    		gainsPriceArr.push(data[i].gainsPrice);
+	   			    	}
+	   			    	showCharts(xAxis,averagePriceArr,gainsPriceArr);
+	   			    }else{
+	   			    	layer.msg('股票数据查询失败',{
+		              		 icon: 5,   //1成功（绿色）2错误（红叉） 3问号（黄色）4 锁（灰色）  5伤心脸（红色）  
+		              		 time: 2800 //2秒关闭（如果不配置，默认是3秒）
+		                }); 
+	   			    }
+	   		   },  
+	   		   error:function(errorData){
+	        		layer.msg('股票数据查询错误',{
+	              		 icon: 2,   //1成功（绿色）2错误（红叉） 3问号（黄色）4 锁（灰色）  5伤心脸（红色）  
+	              		 time: 1000 //2秒关闭（如果不配置，默认是3秒）
+	                }); 
+	   		   }
+	   	  });    
+		   
+	   }      
+	   
+	   //给日期赋初始值
+	   function initDate(){
+		   var myDate = new Date();
+		   var year = myDate.getFullYear();
+		   var month = myDate.getMonth()+1;
+		   if(month < 10){
+			   month = "0"+month;
+		   }
+		   var day = myDate.getDate();
+		   if(day < 10){
+			   day = "0"+day;
+		   }
+		   var lastYear = year-1;
+		   $("#startDate").val(lastYear+"-01-01");       
+		   $("#endDate").val(year+"-"+month+"-"+day);     
+	   }    
+	   
+	   //展示图表
+	   function showCharts(xAxis,averagePriceArr,gainsPriceArr){
+		   $("#chartsDiv").css({"width":$("#chartsDiv").width(),"height":$("#chartsDiv").height()});
+	   	   var barCharts = echarts.init(document.getElementById('chartsDiv'), 'macarons');
+		   option = {
+			    tooltip: {
+			        trigger: 'axis',
+			        axisPointer: {
+			            type: 'cross',
+			            crossStyle: {
+			                color: '#999'
+			            }
+			        }
+			    },
+			    color: [ '#2181FE','#D14A61'],  
+			    toolbox: {   
+			        feature: {
+			            dataView: {show: true, readOnly: false},
+			            magicType: {show: true, type: ['line', 'bar']},
+			            restore: {show: true},
+			            saveAsImage: {show: true}
+			        }
+			    },
+			    legend: {
+			        data: ['平均股价','涨幅']   
+			    },
+			    xAxis: [
+			        {
+			            type: 'category',
+			            data: xAxis,     
+			            axisPointer: {
+			                type: 'shadow'
+			            }
+			        }
+			    ],
+			    yAxis: [
+			        {
+			            type: 'value',
+			            name: '股价/元',
+			        },
+			        {
+			            type: 'value',
+			            name: '平均股价',
+			            show:false,
+			            min: 0,
+			            max: 25,
+			            interval: 5,
+			            axisLabel: {
+			                formatter: '{value} 元'
+			            }
+			        }
+			    ],
+			    series: [     
+			        {
+			            name: '平均股价',
+			            type: 'line',    
+			            data: averagePriceArr,    
+			            symbol:'circle',//拐点样式
+		                symbolSize: 8,//拐点大小    
+		                itemStyle : {
+		                    normal : {
+		                        lineStyle:{
+		                            width:3,//折线宽度
+		                            color:"#2181FE"//折线颜色   
+		                        },
+		                        label : {show: true} // 显示数值
+		                    }
+		                },
+			        },
+			        {
+			            name: '涨幅',
+			            type: 'bar', 
+			            data: gainsPriceArr,
+			            label: {
+							normal: {
+								position: 'top',
+								show: true
+							},    
+							formatter: function(params) {
+								if (params.value > 0) {
+									return params.value+"元";  
+								}else {
+									return '';
+								}
+							}
+						},
+						itemStyle: {
+							normal: {
+								color: function(params) {//每根柱子颜色设置
+									var value = params.value;  
+									if(value > 0){
+										return '#129646';
+									}else{
+										return '#D14A61';
+									}  
+								}
+							}
+						}
+			        }
+			    ]
+			};
+	    	barCharts.clear();
+	    	barCharts.setOption(option);  
+	   }
+	
+	</script>
+
+</body>
+
+</html>

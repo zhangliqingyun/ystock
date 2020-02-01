@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import com.alibaba.fastjson.JSONObject;
 import com.qingyun.dao.DataAnalysisDao;
 import com.qingyun.entity.MacroData;
+import com.qingyun.entity.SituaData;
 import com.qingyun.utils.PageUtils;
 
 /**
@@ -92,6 +93,63 @@ public class DataAnalysisService {
 				return JSONObject.toJSONString(object);
 			}
 			return null;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+    /**
+     * @Description 按数据态势按月份统计
+     * @author 张立增
+     * @Date 2020年2月1日 下午7:22:35
+     */
+	public String monthDataSitua(String startDate, String endDate, String basicStockId) {
+		try {
+			Map<String, Object> params = new HashedMap<String, Object>();
+			params.put("startDate",startDate);
+			params.put("endDate", endDate);
+			params.put("basicStockId", basicStockId);
+			List<SituaData> list = dataAnalysisDao.monthDataSitua(params);
+			return JSONObject.toJSONString(list);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+    /**
+     * @Description 按数据态势按年度统计
+     * @author 张立增
+     * @Date 2020年2月1日 下午10:32:38
+     */
+	public String yearDataSitua(String startDate, String endDate, String basicStockId) {
+		try {
+			Map<String, Object> params = new HashedMap<String, Object>();
+			params.put("startDate",startDate);
+			params.put("endDate", endDate);
+			params.put("basicStockId", basicStockId);
+			List<SituaData> list = dataAnalysisDao.yearDataSitua(params);
+			return JSONObject.toJSONString(list);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+    /**
+     * @Description 按数据态势按季度统计
+     * @author 张立增
+     * @Date 2020年2月1日 下午10:36:02
+     */
+	public String quarterDataSitua(String startDate, String endDate, String basicStockId) {
+		try {
+			Map<String, Object> params = new HashedMap<String, Object>();
+			params.put("startDate",startDate);
+			params.put("endDate", endDate);
+			params.put("basicStockId", basicStockId);
+			List<SituaData> list = dataAnalysisDao.quarterDataSitua(params);
+			return JSONObject.toJSONString(list);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;

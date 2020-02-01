@@ -6,6 +6,7 @@ import java.util.Map;
 import org.springframework.stereotype.Repository;
 
 import com.qingyun.entity.MacroData;
+import com.qingyun.entity.SituaData;
 
 /**
  * @Description 数据分析dao层
@@ -24,5 +25,11 @@ public interface DataAnalysisDao {
 	List<MacroData> minMacroDataList(Map<String, Object> data);
 
 	List<MacroData> firstMacroDataList(Map<String, Object> data);
+
+	List<SituaData> monthDataSitua(Map<String, Object> params);
+
+	List<SituaData> yearDataSitua(Map<String, Object> params);
+
+	List<SituaData> quarterDataSitua(Map<String, Object> params);
 
 }

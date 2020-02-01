@@ -61,6 +61,51 @@
         order by temp.stockCode asc  
         limit #{startIndex} , #{pageSize}
     </select> 
+    
+    <select id="monthDataSitua" parameterType="map" resultType="com.qingyun.entity.SituaData">
+        SELECT LEFT(data_date,7) AS dataDate,ROUND(AVG(now_price),2) AS averagePrice,SUM(diff_price) AS gainsPrice
+		FROM stock.stock_data WHERE basic_stock_id =#{basicStockId} 
+		 <!-- 判断条件参数是否为空 -->
+	    <if test="startDate != null and startDate != ''">
+	        and data_date<![CDATA[>=]]> #{startDate} 
+	    </if>
+	    <if test="endDate != null and endDate != ''">
+	        and data_date<![CDATA[<=]]> #{endDate} 
+	    </if>
+	    <!-- 判断条件参数是否为某值 -->
+		GROUP BY dataDate ORDER BY dataDate
+    </select> 
+
+    <select id="yearDataSitua" parameterType="map" resultType="com.qingyun.entity.SituaData">
+        SELECT LEFT(data_date,4) AS dataDate,ROUND(AVG(now_price),2) AS averagePrice,SUM(diff_price) AS gainsPrice
+		FROM stock.stock_data WHERE basic_stock_id =#{basicStockId} 
+		 <!-- 判断条件参数是否为空 -->
+	    <if test="startDate != null and startDate != ''">
+	        and data_date<![CDATA[>=]]> #{startDate} 
+	    </if>
+	    <if test="endDate != null and endDate != ''">
+	        and data_date<![CDATA[<=]]> #{endDate} 
+	    </if>
+	    <!-- 判断条件参数是否为某值 -->
+		GROUP BY dataDate ORDER BY dataDate
+     </select> 
+     
+     <select id="quarterDataSitua" parameterType="map" resultType="com.qingyun.entity.SituaData">
+        SELECT CONCAT(YEAR(data_date),'_',quarter(data_date)) AS dataDate,ROUND(AVG(now_price),2) AS averagePrice,SUM(diff_price) AS gainsPrice
+		FROM stock.stock_data WHERE basic_stock_id =#{basicStockId} 
+		 <!-- 判断条件参数是否为空 -->
+	    <if test="startDate != null and startDate != ''">
+	        and data_date<![CDATA[>=]]> #{startDate} 
+	    </if>
+	    <if test="endDate != null and endDate != ''">
+	        and data_date<![CDATA[<=]]> #{endDate} 
+	    </if>
+	    <!-- 判断条件参数是否为某值 -->
+		GROUP BY dataDate ORDER BY dataDate
+     </select> 
+     
+     
+
 
     
     
