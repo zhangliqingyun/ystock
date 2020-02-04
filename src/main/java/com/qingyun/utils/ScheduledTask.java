@@ -171,6 +171,7 @@ public class ScheduledTask {
 		    }
 		    if(null != insertList && insertList.size() > 0) {    //保存组织好的股票数据
 		    	stockDataDao.saveStockData(insertList);  
+		    	sendMailToUser();    //给用户发送邮件
 		    	System.out.println("插入股票数据成功，插入记录："+insertList.size()+"条");
 		    }else {
 		    	System.out.println("没有最新股票数据，不进行插入操作");
@@ -179,5 +180,31 @@ public class ScheduledTask {
 			System.out.println("获取到的股票数据与股票数量对应不上，不执行插入操作。股票记录数量："+list.size()+"，爬取到的记录数量："+nowStockData.size());
 		}
 	}
- 
+	
+	/**
+	 * @Description 给用户发送邮件
+	 * @author 张立增
+	 * @Date 2020年2月4日 下午8:56:44
+	 */
+	private void sendMailToUser() {
+		
+	}
+
+	public static String sendMail() {
+		try{
+			 String toEmailAddress="1472052711@qq.com";
+			 SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+			 Date date = new Date();
+			 //邮件主题
+			 String emailTitle=formatter.format(date)+"股票分析预警消息";
+			 //邮件内容
+			 String emailContent="贵州茅台提示你应该买了...";
+             //发送邮件
+             SendmailUtil.sendEmail(toEmailAddress, emailTitle, emailContent);
+			 return CalculatorUtil.getJSONString(0);
+	    }catch(Exception e){
+			 return CalculatorUtil.getJSONString(1,"邮件发送失败！");
+		}
+	}
+	
 }
