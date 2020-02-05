@@ -42,14 +42,15 @@
     </select> 
     
     <update id="updateUser"  parameterType="com.qingyun.entity.User">
-        update stock.basic_user SET username=#{username},password=#{password} where id=#{id}
+        update stock.basic_user SET username=#{username},password=#{password},email=#{email} where id=#{id}
     </update>
     
     <!-- 主键自增长的插入 -->
     <insert id="addUser" parameterType="com.qingyun.entity.User" useGeneratedKeys="true" keyProperty="id">
-         insert into stock.basic_user(username,password) values(
+         insert into stock.basic_user(username,password,email) values(
 	         #{username},
-	         #{password}
+	         #{password},
+	         #{email}
          );
     </insert>
 

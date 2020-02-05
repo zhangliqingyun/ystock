@@ -19,7 +19,14 @@
 	      <input type="text" name="username" lay-verify="username" id="username" placeholder="请输入用户名" autocomplete="off" class="layui-input" oninput="usernameChange()" onporpertychange="usernameChange()">
 	    </div>
 	    <div class="layui-form-mid layui-word-aux"><span style="color:red" id="checkMessage"></span></div>    
-	  </div>       
+	  </div>   
+	  
+	  <div class="layui-form-item">
+	    <label class="layui-form-label">邮箱</label>  
+	    <div class="layui-input-inline" style="width:430px">     
+	      <input type="text" name="email" lay-verify="email" id="email" placeholder="请输入邮箱地址" autocomplete="off" class="layui-input">
+	    </div>  
+	  </div>      
 	     
 	  <div class="layui-form-item">
 	    <label class="layui-form-label">密码</label>
@@ -58,6 +65,15 @@
               if(null != checkMessage && checkMessage.length > 0){
             	  return '用户名已存在';
               }       
+            },
+            email: function(value){    //校验邮箱
+        	  value = value.trim();
+              if(value.length != 0){
+            	  var reg = /^([a-zA-Z]|[0-9])(\w|\-)+@[a-zA-Z0-9]+\.([a-zA-Z]{2,4})$/;
+          		  if(!reg.test(value)){   
+          			return '邮箱格式不正确';
+          		  }     
+              }      
             },
             password: function(value){    //校验密码
         	  value = value.trim();
