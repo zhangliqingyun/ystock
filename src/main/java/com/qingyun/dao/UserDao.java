@@ -43,7 +43,9 @@ public interface UserDao {
 
 	void updateUser(User user);
 
-	void addUser(User user);  
+	void addUser(User user);
+
+	List<User> findUserExistEmail();  
 	
 	
 }

@@ -32,4 +32,8 @@ public interface DataAnalysisDao {
 
 	List<SituaData> quarterDataSitua(Map<String, Object> params);
 
+	List<MacroData> nowAllMacroDataList();
+
+	List<MacroData> minAllMacroDataList();
+
 }

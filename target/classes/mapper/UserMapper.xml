@@ -54,6 +54,10 @@
          );
     </insert>
 
+    <select id="findUserExistEmail" resultType="com.qingyun.entity.User">
+        select * from stock.basic_user where email is not null and length(email)>0
+    </select>  
+
     
     
 </mapper>

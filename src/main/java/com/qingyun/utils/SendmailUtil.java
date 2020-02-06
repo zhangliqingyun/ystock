@@ -72,7 +72,7 @@ public class SendmailUtil {
 		 //定义要输出日期字符串的格式
 		 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		 //在内容后加入邮件发送的时间
-		 builder.append("\n时间：" + sdf.format(new Date()));
+		 builder.append("时间：" + sdf.format(new Date()));
 		 //设置显示的发件时间
 		 msg.setSentDate(new Date());
 		 //设置邮件内容

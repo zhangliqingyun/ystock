@@ -22,9 +22,13 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.qingyun.dao.BasicStockDao;
+import com.qingyun.dao.DataAnalysisDao;
 import com.qingyun.dao.StockDataDao;
+import com.qingyun.dao.UserDao;
 import com.qingyun.entity.BasicStock;
+import com.qingyun.entity.MacroData;
 import com.qingyun.entity.StockData;
+import com.qingyun.entity.User;
 
 import groovy.util.logging.Slf4j;
 
@@ -44,6 +48,12 @@ public class ScheduledTask {
     @Autowired
     StockDataDao stockDataDao;
     
+    @Autowired
+    UserDao userDao;
+    
+    @Autowired
+    DataAnalysisDao dataAnalysisDao;
+    
  	@Value("${stock_data_url}")  
  	private String stockDataUrl;     //从配置文件中读取爬股票的url
  	
@@ -53,7 +63,7 @@ public class ScheduledTask {
 	 * @Date 2020年1月28日 下午5:59:22
 	 */
 	/* @Scheduled(cron="0 30 15 ? * * ") */
- 	@Scheduled(cron="20 15 21 ? * * ")
+ 	@Scheduled(cron="00 06 21 ? * * ")
     public void stockDataTask() {
     	List<BasicStock> list = basicStockDao.basicStockAll();   //查询所有的股票数据
         if(null != list && list.size() > 0) {
@@ -171,8 +181,8 @@ public class ScheduledTask {
 		    }
 		    if(null != insertList && insertList.size() > 0) {    //保存组织好的股票数据
 		    	stockDataDao.saveStockData(insertList);  
-		    	sendMailToUser();    //给用户发送邮件
 		    	System.out.println("插入股票数据成功，插入记录："+insertList.size()+"条");
+		    	sendMailToUser();    //给用户发送邮件
 		    }else {
 		    	System.out.println("没有最新股票数据，不进行插入操作");
 		    }
@@ -187,24 +197,53 @@ public class ScheduledTask {
 	 * @Date 2020年2月4日 下午8:56:44
 	 */
 	private void sendMailToUser() {
-		
+		List<User> userList = userDao.findUserExistEmail(); //查询存在邮箱的用户列表
+		if(null != userList && userList.size() > 0) {
+			List<MacroData> nowList = dataAnalysisDao.nowAllMacroDataList();   //获取当前数据
+			List<MacroData> minList = dataAnalysisDao.minAllMacroDataList();   //获取最小数据
+			SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+			String emailContent = "";
+			for(int i = 0;i < nowList.size();i++) {
+				String stockCode = nowList.get(i).getStockCode();
+				for(int m = 0;m < minList.size();m++) {
+					if(stockCode.equals(minList.get(m).getStockCode())) {
+						nowList.get(i).setLowPrice(minList.get(m).getLowPrice());
+						nowList.get(i).setLowPriceDate(minList.get(m).getLowPriceDate());
+						break;
+					}
+				}
+				BigDecimal nowPrice = nowList.get(i).getNowPrice();
+				if(null != nowPrice) {
+					BigDecimal lowPrice = nowList.get(i).getLowPrice();
+					if(null != lowPrice) {
+						nowList.get(i).setNowLowDiff(nowPrice.subtract(lowPrice));
+						if(nowList.get(i).getNowLowDiff().compareTo(new BigDecimal(0.5)) <= 0) {
+							emailContent += nowList.get(i).getStockCode()+" "+nowList.get(i).getStockName()+"："+"最新价与最低价差值"+nowList.get(i).getNowLowDiff()+",最新股价"+nowList.get(i).getNowPrice()+"，最新日期"+formatter.format(nowList.get(i).getNowPriceDate())+"，最低股价"+nowList.get(i).getLowPrice()+"，最低日期"+formatter.format(nowList.get(i).getLowPriceDate())+"\n";
+						}
+					}
+				}
+			}
+			if(null != emailContent && emailContent.length() > 0) {
+				emailContent = "当前股价与最低价差值小于0.5的股票集合:\n"+emailContent;
+				Date date = new Date();
+				String emailTitle=formatter.format(date)+"股票分析预警消息";//邮件主题
+				for(int k = 0;k < userList.size();k++) {
+					String email = userList.get(k).getEmail();
+					sendEmail(email, emailTitle, emailContent);
+					System.out.println("给用户【"+userList.get(k).getUsername()+"】发邮件成功");
+				}
+			}
+		}
 	}
 
-	public static String sendMail() {
+	public String sendEmail(String email, String emailTitle, String emailContent) {
 		try{
-			 String toEmailAddress="1472052711@qq.com";
-			 SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-			 Date date = new Date();
-			 //邮件主题
-			 String emailTitle=formatter.format(date)+"股票分析预警消息";
-			 //邮件内容
-			 String emailContent="贵州茅台提示你应该买了...";
-             //发送邮件
-             SendmailUtil.sendEmail(toEmailAddress, emailTitle, emailContent);
+			 SendmailUtil.sendEmail(email, emailTitle, emailContent);
 			 return CalculatorUtil.getJSONString(0);
 	    }catch(Exception e){
 			 return CalculatorUtil.getJSONString(1,"邮件发送失败！");
 		}
 	}
+
 	
 }

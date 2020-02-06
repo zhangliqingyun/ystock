@@ -104,7 +104,17 @@
 		GROUP BY dataDate ORDER BY dataDate
      </select> 
      
-     
+     <select id="nowAllMacroDataList" resultType="com.qingyun.entity.MacroData">
+        SELECT * FROM (SELECT now_price as nowPrice,data_date as nowPriceDate,stock_code as stockCode,stock_name as stockName FROM stock.stock_data  
+        ORDER BY data_date DESC LIMIT 10000000000 )  AS temp GROUP BY  temp.stockCode
+        order by temp.stockCode asc  
+    </select> 
+    
+    <select id="minAllMacroDataList" resultType="com.qingyun.entity.MacroData">
+        SELECT * FROM (SELECT now_price as lowPrice,data_date as lowPriceDate,stock_code as stockCode FROM stock.stock_data  
+        ORDER BY now_price asc LIMIT 10000000000 )  AS temp GROUP BY  temp.stockCode
+        order by temp.stockCode asc  
+    </select> 
 
 
     
