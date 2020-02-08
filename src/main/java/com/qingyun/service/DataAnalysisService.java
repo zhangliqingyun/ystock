@@ -89,7 +89,8 @@ public class DataAnalysisService {
 						}
 					}
 				}
-				Object object = PageUtils.makeObject(avgList,avgList.size());
+				List<MacroData> basicStockList = dataAnalysisDao.basicStockAll();
+				Object object = PageUtils.makeObject(avgList,basicStockList.size());
 				return JSONObject.toJSONString(object);
 			}
 			return null;

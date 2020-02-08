@@ -36,4 +36,6 @@ public interface DataAnalysisDao {
 
 	List<MacroData> minAllMacroDataList();
 
+	List<MacroData> basicStockAll();
+
 }

@@ -115,6 +115,10 @@
         ORDER BY now_price asc LIMIT 10000000000 )  AS temp GROUP BY  temp.stockCode
         order by temp.stockCode asc  
     </select> 
+    
+    <select id="basicStockAll" resultType="com.qingyun.entity.MacroData">
+         SELECT stock_code as stockCode FROM stock.basic_stock WHERE appear_addr_code <![CDATA[!= ]]>'s_sh'
+    </select> 
 
 
     

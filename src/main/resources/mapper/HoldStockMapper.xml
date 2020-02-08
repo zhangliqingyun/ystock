@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.qingyun.dao.HoldStockDao">     
+
+    <resultMap type="com.qingyun.entity.HoldStock" id="HoldStock">
+        <id property="id" column="id"/>
+        <result property="stockCode" column="stock_code"/>
+        <result property="stockName" column="stock_name"/>
+        <result property="bulidDate" column="bulid_date"/>
+        <result property="holdNum" column="hold_num"/>
+        <result property="buyPrice" column="buy_price"/>
+        <result property="servicePrice" column="service_price"/>
+        <result property="addDate" column="add_date"/>
+    </resultMap>
+    
+    <select id="holdStockList" parameterType="map"  resultMap="HoldStock">
+        select a.*,b.nowPrice,(b.nowPrice-a.buy_price)*a.hold_num-ifnull(a.service_price,0) as nowProfitLoss from 
+        (
+	        select * from stock.hold_stock  
+	        <!-- 判断条件参数是否为空 --> 
+		    <if test="inputSearch != null and inputSearch != ''">
+		        where (stock_name like '%${inputSearch}%' or stock_code like '%${inputSearch}%' ) 
+		    </if>
+		    <!-- 判断条件参数是否为某值 -->
+	    ) a left join (
+		     SELECT * FROM (SELECT now_price as nowPrice,stock_code as stockCode,stock_name as stockName FROM stock.stock_data  
+	        <!-- 判断条件参数是否为空 -->
+		    <if test="inputSearch != null and inputSearch != ''">
+		        where (stock_name like '%${inputSearch}%' or stock_code like '%${inputSearch}%' ) 
+		    </if>
+		    <!-- 判断条件参数是否为某值 -->
+	        ORDER BY data_date DESC LIMIT 10000000000 )  AS temp GROUP BY  temp.stockCode
+	    )b on a.stock_code = b.stockCode and a.stock_name = b.stockName
+        limit #{startIndex} , #{pageSize}
+    </select> 
+
+    <select id="getTotalListSize"  parameterType="java.lang.String" resultType="Integer">
+        select count(id) from stock.hold_stock   
+        <!-- 判断条件参数是否为空 -->
+        <if test="inputSearch != null and inputSearch != ''">
+	        where (stock_name like '%${inputSearch}%' or stock_code like '%${inputSearch}%' ) 
+	    </if>
+	    <!-- 判断条件参数是否为某值 -->
+    </select>
+    
+    <insert id="saveBuyData" parameterType="com.qingyun.entity.HoldStock" useGeneratedKeys="true" keyProperty="id">
+	    insert into
+	        stock.hold_stock(stock_code,stock_name,bulid_date,hold_num,buy_price,service_price,add_date)
+	    values
+	        (#{stockCode},#{stockName},#{bulidDate,jdbcType=TIMESTAMP},#{holdNum},#{buyPrice},#{servicePrice},#{addDate,jdbcType=TIMESTAMP})
+	</insert>
+
+    
+    
+</mapper>
