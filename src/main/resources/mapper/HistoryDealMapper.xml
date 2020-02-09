@@ -16,8 +16,58 @@
         <result property="addDate" column="add_date"/>
     </resultMap>
     
+    <insert id="saveHistoryDeal" parameterType="com.qingyun.entity.HistoryDeal" useGeneratedKeys="true" keyProperty="id">
+	    insert into
+	        stock.history_deal(stock_code,stock_name,deal_date,deal_unit_price,deal_num,buy_sell_flag,deal_price_total,service_price,profit_loss,add_date)
+	    values
+	        (#{stockCode},#{stockName},#{dealDate,jdbcType=TIMESTAMP},#{dealUnitPrice},#{dealNum},#{buySellFlag},#{dealPriceTotal},#{servicePrice},#{profitLoss},#{addDate,jdbcType=TIMESTAMP})
+	</insert>
+	
+	<select id="findIdByStockCodeAndDate"  parameterType="map"  resultType="Integer">
+        select id from stock.history_deal where stock_code = #{stockCode} and  DATE_FORMAT(add_date, '%Y-%m-%d %H:%i:%s') = #{addDate}
+    </select>
     
+    <delete id="deleteById" parameterType="Integer">
+		delete from stock.history_deal where id=#{id}
+	</delete>
+	
+	<select id="historyDealList" parameterType="map"  resultMap="HistoryDeal">
+        select * from stock.history_deal where 1=1 
+        <!-- 判断条件参数是否为空 -->
+        <if test="inputSearch != null and inputSearch != ''">
+	        and (stock_name like '%${inputSearch}%' or stock_code like '%${inputSearch}%' ) 
+	    </if>
+	    <if test="startDate != null and startDate != ''">
+	        and DATE_FORMAT(deal_date, '%Y-%m-%d') <![CDATA[>=]]> #{startDate} 
+	    </if>
+	    <if test="endDate != null and endDate != ''">
+	        and DATE_FORMAT(deal_date, '%Y-%m-%d') <![CDATA[<=]]> #{endDate}
+	    </if>
+	    <if test="buySellFlag != null and buySellFlag != ''">
+	        and buy_sell_flag=#{buySellFlag}
+	    </if>
+	    <!-- 判断条件参数是否为某值 -->
+	    order by deal_date desc 
+        limit #{startIndex} , #{pageSize}
+    </select> 
     
+    <select id="getTotalListSize"  parameterType="map" resultType="Integer">
+        select count(id) from stock.history_deal  where 1=1  
+        <!-- 判断条件参数是否为空 -->
+        <if test="inputSearch != null and inputSearch != ''">
+	        and (stock_name like '%${inputSearch}%' or stock_code like '%${inputSearch}%' ) 
+	    </if>
+	    <if test="startDate != null and startDate != ''">
+	        and DATE_FORMAT(deal_date, '%Y-%m-%d') <![CDATA[>=]]> #{startDate} 
+	    </if>
+	    <if test="endDate != null and endDate != ''">
+	        and DATE_FORMAT(deal_date, '%Y-%m-%d') <![CDATA[<=]]> #{endDate}
+	    </if>
+	    <if test="buySellFlag != null and buySellFlag != ''">
+	        and buy_sell_flag=#{buySellFlag}
+	    </if>
+	    <!-- 判断条件参数是否为某值 -->
+    </select> 
     
     
 </mapper>

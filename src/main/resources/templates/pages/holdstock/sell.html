@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="renderer" content="webkit" />
+    <title>卖出股票</title>  
+    <link rel="shortcut icon" th:href="@{/common/images/headlogo.ico}"/>         
+    <link th:href="@{/hplus/css/plugins/layui/css/layui.css?v=4.1.0}" rel="stylesheet" /> 
+    <style type="text/css">
+	    .layui-form-item .layui-inline {
+		    margin-bottom: 5px;
+		    margin-right: -5px;
+		}         
+    </style> 
+</head>   
+
+<body>
+	<form class="layui-form" action="" lay-filter="userForm" style="margin-top:15px"> 
+	
+	  <div class="layui-form-item">
+	    <label class="layui-form-label">股票选择</label>  
+	    <div class="layui-input-inline" style="width:430px">     
+	      <select name="id" id="stockCode" lay-verify="stockCode" lay-filter="stockCode">
+			<option value=""></option>
+		  </select>
+	    </div>   
+	  </div>       
+	     
+	  <div class="layui-form-item">
+	    <label class="layui-form-label">卖出日期</label>
+	    <div class="layui-input-block" style="width:430px">
+	      <input type="text" name="bulidDate" id="bulidDate" lay-verify="bulidDate" placeholder="yyyy-MM-dd HH:mm:ss" autocomplete="off" class="layui-input">
+	    </div>
+	  </div>
+	 
+	  <div class="layui-form-item">   
+	   	<label class="layui-form-label">卖出数量</label>  
+	    <div class="layui-inline">
+	       <button type="button" class="layui-btn layui-btn-primary num_action" onclick="clickDo()">-</button>    
+	    </div> 
+	    <div class="layui-inline" style="width:343px">           
+	       <input type="text" name="holdNum" id="holdNum" style="width:343px;text-align:center" lay-verify="holdNum" placeholder="请输入整百数" autocomplete="off" class="layui-input" value="100"  oninput="holdNumChange()" onporpertychange="holdNumChange()">   
+	    </div>           
+	    <div class="layui-inline">
+	       <button type="button" class="layui-btn layui-btn-primary num_action" onclick="clickUp()">+</button>                 
+	    </div>                
+	  </div> 
+	  
+	  <div class="layui-form-item">   
+	   	<label class="layui-form-label">卖出价格</label>  
+	    <div class="layui-input-block" style="width:430px">
+	      <input type="text" name="buyPrice" id="buyPrice" lay-verify="buyPrice" placeholder="请输入卖出价格" autocomplete="off" class="layui-input">
+	    </div>
+	  </div>  
+	  
+	  <div class="layui-form-item">   
+	   	<label class="layui-form-label">手续费</label>  
+	    <div class="layui-input-block" style="width:430px">
+	      <input type="text" name="servicePrice" id="servicePrice" lay-verify="servicePrice" placeholder="请输入手续费" autocomplete="off" class="layui-input">
+	    </div>
+	  </div>    
+	  
+	  <div class="layui-form-item">
+	    <div class="layui-input-block">
+	      <button type="submit" class="layui-btn" lay-submit="" lay-filter="saveData">保存</button>
+	    </div>
+	  </div>     
+	</form>       
+	
+    <script th:src="@{/hplus/css/plugins/layui/layui.js}"></script>
+	<script>    
+	var globalHoldStockList = null;
+	var globalSellMaxNum = 100;
+	layui.use(['form', 'laydate'], function(){    
+		  var form = layui.form,
+		  laydate = layui.laydate,
+		  layer = layui.layer;
+		  laydate.render({//日期
+		    elem: '#bulidDate',
+		    type: 'datetime'
+		  });      
+          initStockCode();     
+          
+          form.verify({  //自定义验证规则
+        	stockCode: function(value){    
+           	  value = value.trim();
+              if(value.length == 0){
+                    return '股票选择不能为空';
+              }            
+            },
+            bulidDate: function(value){    
+        	  value = value.trim();
+              if(value.length == 0){
+                 return '卖出日期不能为空';
+              }       
+            },
+            holdNum: function(value){   
+        	  value = value.trim();
+        	  if(value.length == 0){
+                  return '卖出数量不能为空';
+              } 
+        	  var tempValue = parseInt(value);
+        	  if(tempValue%100 !=0){
+        		  return '请输入整百数';   
+        	  }
+        	  if(tempValue > globalSellMaxNum){
+        		  return '卖出数量不能大于最大持股数'; 
+        	  }
+            },
+            buyPrice: function(value){   
+          	  value = value.trim();
+          	  if(value.length == 0){
+                    return '卖出价格不能为空';
+              }  
+        	  var patrn = /^\d+(\.\d+)?$/;
+        	  if (!patrn.exec(value)){
+        	      return '请输入合法的金额';
+        	  }     
+            },
+            servicePrice: function(value){   
+              value = value.trim();
+              if(value.length == 0){
+                      return '手续费不能为空';
+              }  
+          	  var patrn = /^\d+(\.\d+)?$/;
+          	  if (!patrn.exec(value)){
+          	      return '请输入合法的金额';
+          	  }     
+            }       
+          });
+        
+		  //监听提交
+		  form.on('submit(saveData)', function(data){  
+			  saveData(data.field);
+			  return false;       
+		  });   
+		  
+		  //股票选择变化
+		  form.on('select(stockCode)', function(data){   
+			  var id=data.value;
+			  stockCodeChangeSetSellMaxNum(id);    //股票选择改变，设置可以卖出的最大数量  
+		  });
+		  
+	 }); 
+	
+	function initStockCode(){
+		layui.$.ajax({  
+   			url:"/holdStock/holdStockListCombox",
+   			type: 'POST',
+   			async: false,
+   			success:function(data){
+	        	if(null != data){  
+	   			 	data = JSON.parse(data);  
+	   			    globalHoldStockList = data;
+	        		for(var i = 0;i < data.length;i++){
+	        			layui.$('#stockCode').append(new Option(data[i].stockName, data[i].id));// 下拉菜单里添加元素
+	        		}    
+	        		layui.form.render("select");               
+	        	}else{
+	        		layer.msg('股票数据初始化失败',{
+	              		 icon: 5,   //1成功（绿色）2错误（红叉） 3问号（黄色）4 锁（灰色）  5伤心脸（红色）  
+	              		 time: 1000 //2秒关闭（如果不配置，默认是3秒）
+	                });     
+	        	}    
+   			},  
+   			error:function(errorData){
+        		layer.msg('股票数据初始化错误',{
+              		 icon: 2,   //1成功（绿色）2错误（红叉） 3问号（黄色）4 锁（灰色）  5伤心脸（红色）  
+              		 time: 1000 //2秒关闭（如果不配置，默认是3秒）
+                }); 
+   			}
+   		});    
+	}
+	
+	function saveData(data){ 
+		layui.$.ajax({  
+   			url:"/holdStock/saveSellData",
+   			data:{"data":JSON.stringify(data)},
+   			type: 'POST',
+   			success:function(data){
+   				var message = JSON.parse(data);  
+	        	if(message.type == '200'){  
+	        		layer.msg('股票卖出记录添加成功',{
+	              		 icon: 1,   //1成功（绿色）2错误（红叉） 3问号（黄色）4 锁（灰色）  5伤心脸（红色）  
+	              		 time: 1000 //2秒关闭（如果不配置，默认是3秒）
+	                    }, function(){
+	                       var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+	                       parent.layer.close(index); //再执行关闭
+	                  });        
+	        	}else{
+	        		layer.msg('股票卖出记录添加失败',{
+	              		 icon: 5,   //1成功（绿色）2错误（红叉） 3问号（黄色）4 锁（灰色）  5伤心脸（红色）  
+	              		 time: 2800 //2秒关闭（如果不配置，默认是3秒）
+	                });   
+	        	} 
+   			},  
+   			error:function(errorData){
+        		layer.msg('股票卖出记录添加错误',{
+              		 icon: 2,   //1成功（绿色）2错误（红叉） 3问号（黄色）4 锁（灰色）  5伤心脸（红色）  
+              		 time: 1000 //2秒关闭（如果不配置，默认是3秒）
+                }); 
+   			}
+   		});    
+	 }
+	
+	 function holdNumChange(){      
+		var holdNum = layui.$('#holdNum').val().trim();  
+		if(!/^\d+$/.test(holdNum)){           
+			layer.msg('卖出数量请输入整数',{
+         		 icon: 2,   //1成功（绿色）2错误（红叉） 3问号（黄色）4 锁（灰色）  5伤心脸（红色）  
+         		 time: 1000 //2秒关闭（如果不配置，默认是3秒）
+            }, function(){
+            	 layui.$('#holdNum').val(100);   
+           }); 
+		   return;
+		}
+		if(parseInt(holdNum) > globalSellMaxNum ){   //当前加的股票不能大于可以卖出的最大股票数量
+			layer.msg('卖出数量不能大于最大持股数',{
+        		 icon: 2,   //1成功（绿色）2错误（红叉） 3问号（黄色）4 锁（灰色）  5伤心脸（红色）  
+        		 time: 1000 //2秒关闭（如果不配置，默认是3秒）
+            }, function(){
+           	     layui.$('#holdNum').val(globalSellMaxNum);   
+            }); 
+		    return;
+		}
+	 }
+	 
+	 function clickUp(){
+		 var chooseStockCode = layui.$('#stockCode').val();
+		 var holdNum = layui.$('#holdNum').val().trim();  
+		 var holdNumUp = parseInt(holdNum)+100;
+		 if(null != chooseStockCode && chooseStockCode.length > 0){   //有选择股票
+			 if(holdNumUp > globalSellMaxNum ){   //当前加的股票不能大于可以卖出的最大股票数量
+				 layer.msg('卖出数量不能大于最大持股数',{
+	        		 icon: 2,   //1成功（绿色）2错误（红叉） 3问号（黄色）4 锁（灰色）  5伤心脸（红色）  
+	        		 time: 1000 //2秒关闭（如果不配置，默认是3秒）
+	             }, function(){
+	           	     layui.$('#holdNum').val(globalSellMaxNum);   
+	             }); 
+			     return;
+			 }
+		 }                   
+		 layui.$('#holdNum').val(holdNumUp);    
+	 }
+	 
+	 function clickDo(){
+		 var holdNum = layui.$('#holdNum').val().trim();
+		 var tempHoldNum = parseInt(holdNum)-100;
+		 if(tempHoldNum <= 0){
+			 tempHoldNum = 100;
+		 }
+		 layui.$('#holdNum').val(tempHoldNum);                
+	 }
+
+	 //股票选择改变，设置可以卖出的最大数量  
+	 function stockCodeChangeSetSellMaxNum(id){     
+		 if(null == id || id.length == 0){
+			 layui.$('#holdNum').val(100);  
+			 return;
+		 }
+		 if(null == globalHoldStockList || globalHoldStockList.length == 0){
+			 layui.$('#holdNum').val(100);  
+			 return; 
+		 }
+		 for(var i = 0;i < globalHoldStockList.length;i++){
+			 if(id == globalHoldStockList[i].id){       
+				 layui.$('#holdNum').val(globalHoldStockList[i].holdNum); 
+				 globalSellMaxNum = globalHoldStockList[i].holdNum;
+				 break;   
+			 }   
+		 }
+	 }
+	 
+	</script>
+
+</body>
+
+</html>

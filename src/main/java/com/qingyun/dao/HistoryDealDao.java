@@ -3,8 +3,10 @@ package com.qingyun.dao;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
+import com.qingyun.entity.HistoryDeal;
 import com.qingyun.entity.MacroData;
 import com.qingyun.entity.SituaData;
 
@@ -15,6 +17,16 @@ import com.qingyun.entity.SituaData;
  */
 @Repository
 public interface HistoryDealDao {
+
+	void saveHistoryDeal(HistoryDeal historyDeal);
+
+	Integer findIdByStockCodeAndDate(Map<String, Object> params);
+
+	void deleteById(@Param("id")Integer id);
+
+	List<HistoryDeal> historyDealList(Map<String, Object> data);
+
+	Integer getTotalListSize(Map<String, Object> data);
 
 	
 

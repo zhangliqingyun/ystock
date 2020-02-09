@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="renderer" content="webkit" />
+    <title>历史成交</title>  
+    <link rel="shortcut icon" th:href="@{/common/images/headlogo.ico}"/>         
+    <link th:href="@{/hplus/css/plugins/layui/css/layui.css?v=4.1.0}" rel="stylesheet" />  
+</head> 
+  
+<body>
+	<div class="layui-form" style="margin-top:10px;margin-left:10px">   
+         <div class="layui-inline">              
+		      <div class="layui-input-inline" style="width: 150px;">          
+		   	      <select name="buySellFlag" id="buySellFlag" lay-verify="buySellFlag" lay-filter="buySellFlag">  
+		   	         <option value="">交易类型</option>  
+		   	         <option value="买入">买入</option>
+		   	         <option value="卖出">卖出</option>
+		   	      </select>        
+		   	  </div>   
+		   	  <div class="layui-input-inline" style="width: 150px;">
+		   	      <input type="text" name="startDate" id="startDate" lay-verify="startDate" placeholder="起始日期" autocomplete="off" class="layui-input">
+		      </div>  
+		      <div class="layui-input-inline">&nbsp;&nbsp;-&nbsp;&nbsp;</div>
+		      <div class="layui-input-inline" style="width: 150px;">          
+		   	      <input type="text" name="endDate" id="endDate" lay-verify="endDate" placeholder="截止日期" autocomplete="off" class="layui-input">
+		      </div>           
+		  </div>     
+		  <div style="float:right;padding-right:10px">       
+			  <div class="layui-inline" >         
+			      <input class="layui-input" placeholder="请输入股票代码或名称" name="inputSearch" id="inputSearch" autocomplete="off">
+			  </div>  
+		      <button class="layui-btn" data-type="reload"><i class="layui-icon">&#xe615;</i>搜索</button> 
+	      </div>  
+    </div>              
+       
+	<table class="layui-hide" id="tableGrid" lay-filter="tableGrid"></table>
+	<script th:src="@{/hplus/js/jquery.min.js?v=2.1.4}"></script>     
+    <script th:src="@{/hplus/css/plugins/layui/layui.js}"></script>   
+
+	<script>  
+	   var layer = null;     
+	   layui.use(['layer', 'table','form','laydate'], function(){
+		  var $ = layui.jquery, layer = layui.layer, form = layui.form,laydate = layui.laydate; //独立版的layer无需执行这一句
+		  var table = layui.table;           
+		  table.render({//方法级渲染
+		    elem: '#tableGrid',
+		    url: '/historyDeal/historyDealList',
+		    cols: [[   
+		      {checkbox: true, fixed: true}, 
+		      {field:'stockCode', width:90,title: '股票代码 '}, 
+		      {field:'stockName', width:90, title: '股票名称'},  
+		      {field:'dealDate', width:160, title: '成交日期 ',templet:'<div>{{ layui.util.toDateString(d.dealDate, "yyyy-MM-dd HH:mm:ss") }}</div>'},
+		      {field:'dealUnitPrice', width:95, title: '成交单价'},     
+		      {field:'dealNum', width:90, title: '成交量'},     
+		      {field:'buySellFlag', width:90, title: '交易类型'},    
+		      {field:'dealPriceTotal', width:75, title: '成交额'},   
+		      {field:'servicePrice', width:75, title: '手续费'},               
+		      {field:'profitLoss', width:75, title: '盈亏'},     
+		      {field:'addDate', width:160, title: '录入时间',templet:'<div>{{ layui.util.toDateString(d.addDate, "yyyy-MM-dd HH:mm:ss") }}</div>'},
+		    ]],         
+		    id: 'tableGrid',        
+		    page: true,
+		    height : 'full-70'    
+		  });                      
+		         
+		  laydate.render({//起始日期   
+			  elem: '#startDate',
+			  done: function(value, date, endDate){
+				  if(null != value && value.length > 0){
+						var startTime = new Date(value).getTime();
+						var endTime = new Date($('#endDate').val()).getTime();
+						if (startTime > endTime) {   //日期不符合，赋初始值  
+							layer.msg('起始日期不能大于截止日期',{
+			              		icon: 2,   //1成功（绿色）2错误（红叉） 3问号（黄色）4 锁（灰色）  5伤心脸（红色）  
+			              		time: 1000 //2秒关闭（如果不配置，默认是3秒）
+			                }, function(){    
+			                	var myDate = new Date();
+							    var year = myDate.getFullYear();
+							    var month = myDate.getMonth()+1;
+							    if(month < 10){
+								   month = "0"+month;
+							    }
+							    var day = myDate.getDate();
+							    if(day < 10){
+								   day = "0"+day;
+							    }
+							    var lastYear = year-1;    
+							    $("#startDate").val(lastYear+"-01-01");   
+			                });        
+						}else{
+							window.setTimeout("loadData()",10);  //延迟加载，防止改变的日期没有赋完值
+						}
+				  }else{
+					  window.setTimeout("loadData()",10);  //延迟加载，防止改变的日期没有赋完值  
+				  } 
+			  }
+		  });
+		  
+		  laydate.render({//截止日期
+			  elem: '#endDate',          
+			  done: function(value, date, endDate){
+				  if(null != value && value.length > 0){
+						var endTime = new Date(value).getTime();
+						var startTime = new Date($('#startDate').val()).getTime();
+						if (endTime < startTime) {    //日期不符合，赋初始值
+							layer.msg('截止日期不能小于起始日期',{
+			              		icon: 2,   //1成功（绿色）2错误（红叉） 3问号（黄色）4 锁（灰色）  5伤心脸（红色）  
+			              		time: 1000 //2秒关闭（如果不配置，默认是3秒）
+			                }, function(){   
+			                	var myDate = new Date();
+							    var year = myDate.getFullYear();
+							    var month = myDate.getMonth()+1;
+							    if(month < 10){
+								   month = "0"+month;
+							    }
+							    var day = myDate.getDate();
+							    if(day < 10){
+								   day = "0"+day;
+							    }     
+							    $("#endDate").val(year+"-"+month+"-"+day);   
+			                });    
+						}else{
+							window.setTimeout("loadData()",10);  //延迟加载，防止改变的日期没有赋完值 
+						}
+				  }else{
+					  window.setTimeout("loadData()",10);  //延迟加载，防止改变的日期没有赋完值              
+				  } 
+			  }       
+		  });  
+		  
+		  form.on('select(buySellFlag)', function(data){   //下拉选择改变触发
+			  loadData();
+		  });     
+		  
+		  var $ = layui.$, active = {
+		      reload: function(){        //执行重载  
+		    	  loadData(); 
+		      }
+		  };    
+				        
+		  $('.layui-form .layui-btn').on('click', function(){   //按钮监听事件
+		        var type = $(this).data('type');                     //根据data-type定义调用active的对应方法
+		        active[type] ? active[type].call(this) : ''; 
+		  });
+				  
+		  //搜索条件框div添加回车监听事件  
+		  $("#inputSearch").bind("keydown",function(e){   
+			    var theEvent = e || window.event;     // 兼容FF和IE和Opera    
+			    var code = theEvent.keyCode || theEvent.which || theEvent.charCode;    
+			    if (code == 13) {                     //回车执行查询
+			    	loadData();              
+			    }    
+		   });      
+		  
+		   layui.form.render("select");    
+	   });
+	      
+	   function loadData(){
+		   var inputSearch = layui.$('#inputSearch');   
+           var startDate = layui.$("#startDate").val();     
+		   var endDate = layui.$("#endDate").val(); 
+		   var buySellFlag = layui.$("#buySellFlag").val(); 
+		   layui.table.reload('tableGrid', {       
+	         page: {
+	           curr: 1 //重新从第 1 页开始
+	         },
+	         where: {
+	        	 inputSearch: inputSearch.val().trim(),
+	        	 startDate:startDate,
+	        	 endDate:endDate,
+	        	 buySellFlag:buySellFlag   
+	         }   
+	      }, 'data');
+	   } 
+	   
+	</script>
+
+</body>
+
+</html>

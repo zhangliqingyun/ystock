@@ -11,10 +11,11 @@
         <result property="buyPrice" column="buy_price"/>
         <result property="servicePrice" column="service_price"/>
         <result property="addDate" column="add_date"/>
+        <result property="historyDealIds" column="history_deal_ids"/>
     </resultMap>
     
     <select id="holdStockList" parameterType="map"  resultMap="HoldStock">
-        select a.*,b.nowPrice,(b.nowPrice-a.buy_price)*a.hold_num-ifnull(a.service_price,0) as nowProfitLoss from 
+        select a.*,b.nowPrice,(b.nowPrice-a.buy_price)*a.hold_num-ifnull(a.service_price,0) as nowProfitLoss,b.nowPrice*a.hold_num as marketValue from 
         (
 	        select * from stock.hold_stock  
 	        <!-- 判断条件参数是否为空 --> 
@@ -45,10 +46,36 @@
     
     <insert id="saveBuyData" parameterType="com.qingyun.entity.HoldStock" useGeneratedKeys="true" keyProperty="id">
 	    insert into
-	        stock.hold_stock(stock_code,stock_name,bulid_date,hold_num,buy_price,service_price,add_date)
+	        stock.hold_stock(stock_code,stock_name,bulid_date,hold_num,buy_price,service_price,add_date,history_deal_ids)
 	    values
-	        (#{stockCode},#{stockName},#{bulidDate,jdbcType=TIMESTAMP},#{holdNum},#{buyPrice},#{servicePrice},#{addDate,jdbcType=TIMESTAMP})
+	        (#{stockCode},#{stockName},#{bulidDate,jdbcType=TIMESTAMP},#{holdNum},#{buyPrice},#{servicePrice},#{addDate,jdbcType=TIMESTAMP},#{historyDealIds})
 	</insert>
+	
+	<select id="findByStockCode"  parameterType="java.lang.String"  resultMap="HoldStock">
+        select * from stock.hold_stock where stock_code = #{stockCode}
+    </select>
+    
+    <delete id="deleteByStockCode" parameterType="java.lang.String">
+		delete from stock.hold_stock where stock_code=#{stockCode}
+	</delete>
+	
+    <select id="holdStockListCombox" resultMap="HoldStock">
+        select * from stock.hold_stock order by stock_code asc   
+    </select>
+    
+    <select id="findById"  parameterType="Integer" resultMap="HoldStock">
+        select * from stock.hold_stock where id = #{id}  
+    </select>
+    
+    <delete id="deleteById" parameterType="Integer">
+		delete from stock.hold_stock where id=#{id}
+	</delete>
+    
+    <update id="updateHoldNum"  parameterType="com.qingyun.entity.HoldStock">
+        update stock.hold_stock SET hold_num=#{holdNum} where id=#{id}
+    </update>
+    
+    
 
     
     

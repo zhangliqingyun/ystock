@@ -83,6 +83,40 @@ public class HoldStockController {
 		return holdStockService.saveBuyData(holdStock);
 	}
     
+	/**
+	 * @Description 持仓股票下拉集合
+	 * @author 张立增
+	 * @Date 2020年2月9日 下午4:46:39
+	 */
+	@RequestMapping(value = "/holdStockListCombox", method = { RequestMethod.POST, RequestMethod.GET})
+	public String basicStockAllList(HttpServletRequest request) throws Exception {
+		return holdStockService.holdStockListCombox();
+	}
+	
+	/**
+	 * @Description 保存卖出股票记录
+	 * @author 张立增
+	 * @Date 2020年2月9日 下午5:38:34
+	 */
+	@RequestMapping(value = "/saveSellData", method = { RequestMethod.POST, RequestMethod.GET})
+	public String saveSellData(HttpServletRequest request) throws Exception {
+		String data = request.getParameter("data");    
+		HoldStock holdStock = JSONObject.parseObject(data, HoldStock.class);
+		return holdStockService.saveSellData(holdStock);
+	}
+	
+	/**
+	 * @Description 根据ids删除记录
+	 * @author 张立增
+	 * @Date 2020年2月9日 下午7:05:59
+	 */
+	@RequestMapping(value = "/deleteDataByids", method = { RequestMethod.POST, RequestMethod.GET})
+	public String deleteDataByids(HttpServletRequest request) throws Exception {
+		String ids = request.getParameter("ids");    
+		return holdStockService.deleteDataByids(ids);
+	}
+	
+	
     
   
    

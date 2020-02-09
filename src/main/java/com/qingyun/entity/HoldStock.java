@@ -27,17 +27,19 @@ public class HoldStock implements Serializable {
     private BigDecimal buyPrice;         //成交价
     private BigDecimal servicePrice;         //手续费
     private Date addDate;         //录入系统日期
+    private String historyDealIds; //历史交易ids，使用逗号分隔，用于删除时使用
     
     private BigDecimal nowPrice;   //当前价
     private BigDecimal nowProfitLoss;   //当前盈亏
     private Integer basicStockId;   //股票基本信息主键id
+    private BigDecimal marketValue; //市值
 	
     public HoldStock() {
 		super();
 	}
 
 	public HoldStock(Integer id, String stockCode, String stockName, Date bulidDate, Integer holdNum,
-			BigDecimal buyPrice, BigDecimal servicePrice, Date addDate, BigDecimal nowPrice, BigDecimal nowProfitLoss,Integer basicStockId) {
+			BigDecimal buyPrice, BigDecimal servicePrice, Date addDate, BigDecimal nowPrice, BigDecimal nowProfitLoss,Integer basicStockId,String historyDealIds,BigDecimal marketValue) {
 		super();
 		this.id = id;
 		this.stockCode = stockCode;
@@ -50,6 +52,8 @@ public class HoldStock implements Serializable {
 		this.nowPrice = nowPrice;
 		this.nowProfitLoss = nowProfitLoss;
 		this.basicStockId = basicStockId;
+		this.historyDealIds = historyDealIds;
+		this.marketValue = marketValue;
 	}
 
 	@Id
@@ -126,6 +130,15 @@ public class HoldStock implements Serializable {
 	public void setAddDate(Date addDate) {
 		this.addDate = addDate;
 	}
+	
+	@Column(name = "history_deal_ids", length = 500)
+	public String getHistoryDealIds() {
+		return historyDealIds;
+	}
+
+	public void setHistoryDealIds(String historyDealIds) {
+		this.historyDealIds = historyDealIds;
+	}
 
 	public BigDecimal getNowPrice() {
 		return nowPrice;
@@ -149,7 +162,16 @@ public class HoldStock implements Serializable {
 
 	public void setBasicStockId(Integer basicStockId) {
 		this.basicStockId = basicStockId;
+	}
+
+	public BigDecimal getMarketValue() {
+		return marketValue;
+	}
+
+	public void setMarketValue(BigDecimal marketValue) {
+		this.marketValue = marketValue;
 	}  
+	
 	
 	
 	

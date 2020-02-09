@@ -19,7 +19,31 @@ public class DateUtils {
         }
         return false;
     }
+    
+    public static String formatDateString(Date date, String format) {
+    	String result = "";
+    	try {
+    		if (date != null) {
+    			SimpleDateFormat sdf = new SimpleDateFormat(format);
+    			result = sdf.format(date);
+    		}
+    	} catch (Exception ex) {
+    	    ex.printStackTrace();
+    	}
+    	return result;
+    }
 
+    public static Date formatDate(String date, String format) {
+    	try {
+    		if (date != null) {
+    			SimpleDateFormat sdf = new SimpleDateFormat(format);
+    			return sdf.parse(date);
+    		}
+    	} catch (Exception ex) {
+    	    ex.printStackTrace();
+    	}
+    	return null;
+    }
 
     public static int compare_date(String date1, String date2) {
 

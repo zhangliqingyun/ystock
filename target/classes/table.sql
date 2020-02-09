@@ -42,6 +42,7 @@ CREATE TABLE `hold_stock` (
   `buy_price` decimal(10,3) DEFAULT NULL COMMENT '成交价',
   `service_price` decimal(5,3) DEFAULT NULL COMMENT '手续费',
   `add_date` timestamp NULL DEFAULT NULL COMMENT '录入系统日期',
+  `history_deal_ids` varchar(500) DEFAULT NULL COMMENT '历史交易ids，使用逗号分隔，用于删除时使用',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
 

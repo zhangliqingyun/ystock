@@ -24,6 +24,18 @@ public interface HoldStockDao {
 
 	void saveBuyData(HoldStock holdStock);
 
+	List<HoldStock> findByStockCode(@Param("stockCode")String stockCode);
+
+	void deleteByStockCode(@Param("stockCode")String stockCode);
+
+	List<HoldStock> holdStockListCombox();
+
+	List<HoldStock> findById(@Param("id")Integer id);
+
+	void deleteById(@Param("id")Integer id);
+
+	void updateHoldNum(HoldStock holdStockDataBase);
+
 	
 
 }
