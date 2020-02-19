@@ -63,7 +63,7 @@ public class ScheduledTask {
 	 * @Date 2020年1月28日 下午5:59:22
 	 */
 	/* @Scheduled(cron="0 30 15 ? * * ") */
- 	@Scheduled(cron="00 06 21 ? * * ")
+ 	@Scheduled(cron="00 12 15 ? * * ")
     public void stockDataTask() {
     	List<BasicStock> list = basicStockDao.basicStockAll();   //查询所有的股票数据
         if(null != list && list.size() > 0) {
