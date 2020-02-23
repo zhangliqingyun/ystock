@@ -51,5 +51,49 @@ public class HistoryDealController {
   		return historyDealService.historyDealList(page,limit,inputSearch,startDate,endDate,buySellFlag);
   	}
     
+    /**
+     * @Description 跳转到盈亏一览页面
+     * @author 张立增
+     * @Date 2020年2月23日 下午6:37:16
+     */
+    @RequestMapping("/profitLossIndex")
+ 	public ModelAndView profitLossIndex() {
+ 		ModelAndView mv = new ModelAndView("pages/historydeal/profitlossindex");
+ 		return mv;
+ 	}
+    
+    /**
+     * @Description 盈亏一览汇总数据
+     * @author 张立增
+     * @Date 2020年2月23日 下午6:46:26
+     */
+    @RequestMapping(value = "/profitLossList", method = { RequestMethod.POST, RequestMethod.GET})
+  	public String profitLossList(HttpServletRequest request) throws Exception {
+  		String page = request.getParameter("page");    
+  		String limit = request.getParameter("limit");
+  		String inputSearch = request.getParameter("inputSearch");
+  		String startDate = request.getParameter("startDate");
+  		String endDate = request.getParameter("endDate");
+  		String statisticalMethods = request.getParameter("statisticalMethods");
+  		return historyDealService.profitLossList(page,limit,inputSearch,startDate,endDate,statisticalMethods);
+  	}
+    
+    /**
+     * @Description 得到总盈亏金额
+     * @author 张立增
+     * @Date 2020年2月23日 下午8:14:38
+     */
+    @RequestMapping(value = "/getTotalMoney", method = { RequestMethod.POST, RequestMethod.GET})
+  	public String getTotalMoney(HttpServletRequest request) throws Exception {
+  		String inputSearch = request.getParameter("inputSearch");
+  		String startDate = request.getParameter("startDate");
+  		String endDate = request.getParameter("endDate");
+  		return historyDealService.getTotalMoney(inputSearch,startDate,endDate);
+  	}
+    
+    
+    
+    
+    
     
 }

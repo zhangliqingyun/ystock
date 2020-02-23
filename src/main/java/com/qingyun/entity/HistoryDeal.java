@@ -30,6 +30,9 @@ public class HistoryDeal implements Serializable {
     private BigDecimal servicePrice;         //手续费
     private BigDecimal profitLoss;         //盈亏（卖出股票才有值）
     private Date addDate;         //录入系统日期
+    
+    private String tradingDate;   //交易日期、
+    private BigDecimal profitLossPercent;//盈亏比例
 	
     public HistoryDeal() {
 		super();
@@ -37,7 +40,7 @@ public class HistoryDeal implements Serializable {
 
 	public HistoryDeal(Integer id, String stockCode, String stockName, Date dealDate, BigDecimal dealUnitPrice,
 			Integer dealNum, String buySellFlag, BigDecimal dealPriceTotal, BigDecimal servicePrice,
-			BigDecimal profitLoss, Date addDate) {
+			BigDecimal profitLoss, Date addDate, String tradingDate, BigDecimal profitLossPercent) {
 		super();
 		this.id = id;
 		this.stockCode = stockCode;
@@ -50,6 +53,8 @@ public class HistoryDeal implements Serializable {
 		this.servicePrice = servicePrice;
 		this.profitLoss = profitLoss;
 		this.addDate = addDate;
+		this.tradingDate = tradingDate;
+		this.profitLossPercent = profitLossPercent;
 	}
 
 	@Id
@@ -153,5 +158,23 @@ public class HistoryDeal implements Serializable {
 	public void setAddDate(Date addDate) {
 		this.addDate = addDate;
 	}  
+	
+	public String getTradingDate() {
+		return tradingDate;
+	}
+
+	public void setTradingDate(String tradingDate) {
+		this.tradingDate = tradingDate;
+	}
+
+	public BigDecimal getProfitLossPercent() {
+		return profitLossPercent;
+	}
+
+	public void setProfitLossPercent(BigDecimal profitLossPercent) {
+		this.profitLossPercent = profitLossPercent;
+	}
+
+
 		
 }

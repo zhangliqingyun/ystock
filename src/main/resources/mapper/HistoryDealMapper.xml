@@ -69,5 +69,89 @@
 	    <!-- 判断条件参数是否为某值 -->
     </select> 
     
+    <select id="profitLossListByDate" parameterType="map"  resultMap="HistoryDeal">
+        select stock_code,stock_name,DATE_FORMAT(deal_date, '%Y-%m-%d') as tradingDate, profit_loss,ROUND((profit_loss/(deal_price_total-profit_loss))*100,2) AS profitLossPercent  
+        from stock.history_deal where buy_sell_flag='卖出' 
+        <!-- 判断条件参数是否为空 -->
+        <if test="inputSearch != null and inputSearch != ''">
+	        and (stock_name like '%${inputSearch}%' or stock_code like '%${inputSearch}%' ) 
+	    </if>
+	    <if test="startDate != null and startDate != ''">
+	        and DATE_FORMAT(deal_date, '%Y-%m-%d') <![CDATA[>=]]> #{startDate} 
+	    </if>
+	    <if test="endDate != null and endDate != ''">
+	        and DATE_FORMAT(deal_date, '%Y-%m-%d') <![CDATA[<=]]> #{endDate}
+	    </if>
+	    <!-- 判断条件参数是否为某值 -->
+	    order by deal_date desc 
+        limit #{startIndex} , #{pageSize}
+    </select> 
+    
+    <select id="getTotalListSizeByDate"  parameterType="map" resultType="Integer">
+        select count(id) from stock.history_deal  where buy_sell_flag='卖出'   
+        <!-- 判断条件参数是否为空 -->
+        <if test="inputSearch != null and inputSearch != ''">
+	        and (stock_name like '%${inputSearch}%' or stock_code like '%${inputSearch}%' ) 
+	    </if>
+	    <if test="startDate != null and startDate != ''">
+	        and DATE_FORMAT(deal_date, '%Y-%m-%d') <![CDATA[>=]]> #{startDate} 
+	    </if>
+	    <if test="endDate != null and endDate != ''">
+	        and DATE_FORMAT(deal_date, '%Y-%m-%d') <![CDATA[<=]]> #{endDate}
+	    </if>
+	    <!-- 判断条件参数是否为某值 -->
+    </select> 
+    
+    <select id="profitLossListByType" parameterType="map"  resultMap="HistoryDeal">
+         SELECT *, ROUND((profit_loss/(deal_price_total-profit_loss))*100,2) AS profitLossPercent  FROM 
+		 (SELECT stock_code,MAX(stock_name) AS stock_name,SUM(profit_loss) AS profit_loss,SUM(deal_price_total) AS deal_price_total, 
+		 GROUP_CONCAT(tradingDate) AS tradingDate FROM  
+		 (SELECT stock_code,stock_name,DATE_FORMAT(deal_date, '%Y-%m-%d') AS tradingDate,
+		  profit_loss,deal_price_total FROM stock.history_deal WHERE buy_sell_flag='卖出' 
+        <!-- 判断条件参数是否为空 -->
+        <if test="inputSearch != null and inputSearch != ''">
+	        and (stock_name like '%${inputSearch}%' or stock_code like '%${inputSearch}%' ) 
+	    </if>
+	    <if test="startDate != null and startDate != ''">
+	        and DATE_FORMAT(deal_date, '%Y-%m-%d') <![CDATA[>=]]> #{startDate} 
+	    </if>
+	    <if test="endDate != null and endDate != ''">
+	        and DATE_FORMAT(deal_date, '%Y-%m-%d') <![CDATA[<=]]> #{endDate}
+	    </if>
+	    <!-- 判断条件参数是否为某值 -->
+	    order by deal_date ASC 
+	    )a GROUP BY stock_code)b 
+        limit #{startIndex} , #{pageSize}
+    </select> 
+    
+    <select id="getTotalListSizeByType"  parameterType="map" resultType="Integer">
+       SELECT COUNT(DISTINCT(stock_code)) FROM stock.history_deal WHERE buy_sell_flag='卖出' 
+        <!-- 判断条件参数是否为空 -->
+        <if test="inputSearch != null and inputSearch != ''">
+	        and (stock_name like '%${inputSearch}%' or stock_code like '%${inputSearch}%' ) 
+	    </if>
+	    <if test="startDate != null and startDate != ''">
+	        and DATE_FORMAT(deal_date, '%Y-%m-%d') <![CDATA[>=]]> #{startDate} 
+	    </if>
+	    <if test="endDate != null and endDate != ''">
+	        and DATE_FORMAT(deal_date, '%Y-%m-%d') <![CDATA[<=]]> #{endDate}
+	    </if>
+	    <!-- 判断条件参数是否为某值 -->
+    </select> 
+    
+    <select id="getTotalMoney" parameterType="map"  resultMap="HistoryDeal">
+        select IFNULL(SUM(profit_loss),0) AS profit_loss from stock.history_deal WHERE buy_sell_flag='卖出'
+        <!-- 判断条件参数是否为空 -->
+        <if test="inputSearch != null and inputSearch != ''">
+	        and (stock_name like '%${inputSearch}%' or stock_code like '%${inputSearch}%' ) 
+	    </if>
+	    <if test="startDate != null and startDate != ''">
+	        and DATE_FORMAT(deal_date, '%Y-%m-%d') <![CDATA[>=]]> #{startDate} 
+	    </if>
+	    <if test="endDate != null and endDate != ''">
+	        and DATE_FORMAT(deal_date, '%Y-%m-%d') <![CDATA[<=]]> #{endDate}
+	    </if>
+    </select> 
+    
     
 </mapper>

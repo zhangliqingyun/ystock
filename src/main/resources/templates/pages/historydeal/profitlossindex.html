@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="renderer" content="webkit" />
+    <title>历史成交</title>  
+    <link rel="shortcut icon" th:href="@{/common/images/headlogo.ico}"/>         
+    <link th:href="@{/hplus/css/plugins/layui/css/layui.css?v=4.1.0}" rel="stylesheet" />  
+</head> 
+  
+<body>
+	<div class="layui-form" style="margin-top:10px;margin-left:10px">   
+         <div class="layui-inline">              
+		      <div class="layui-input-inline" style="width: 150px;">          
+		   	      <select name="statisticalMethods" id="statisticalMethods" lay-verify="statisticalMethods" lay-filter="statisticalMethods">   
+		   	         <option value="时间展示">时间展示</option>  
+		   	         <option value="股票汇总">股票汇总</option>
+		   	      </select>        
+		   	  </div>   
+		   	  <div class="layui-input-inline" style="width: 150px;">
+		   	      <input type="text" name="startDate" id="startDate" lay-verify="startDate" placeholder="起始日期" autocomplete="off" class="layui-input">
+		      </div>  
+		      <div class="layui-input-inline">&nbsp;&nbsp;-&nbsp;&nbsp;</div>
+		      <div class="layui-input-inline" style="width: 150px;">          
+		   	      <input type="text" name="endDate" id="endDate" lay-verify="endDate" placeholder="截止日期" autocomplete="off" class="layui-input">
+		      </div> 
+		      <div class="layui-input-inline">&nbsp;&nbsp;&nbsp;&nbsp;总盈亏：<span id="totalMoney"></span>元</div>                 
+		  </div>        
+		  <div style="float:right;padding-right:10px">       
+			  <div class="layui-inline" >         
+			      <input class="layui-input" placeholder="请输入股票代码或名称" name="inputSearch" id="inputSearch" autocomplete="off">
+			  </div>  
+		      <button class="layui-btn" data-type="reload"><i class="layui-icon">&#xe615;</i>搜索</button> 
+	      </div>  
+    </div>              
+       
+	<table class="layui-hide" id="tableGrid" lay-filter="tableGrid"></table>
+	<script th:src="@{/hplus/js/jquery.min.js?v=2.1.4}"></script>     
+    <script th:src="@{/hplus/css/plugins/layui/layui.js}"></script>   
+
+	<script>  
+	   var layer = null;     
+	   layui.use(['layer', 'table','form','laydate'], function(){
+		  var $ = layui.jquery, layer = layui.layer, form = layui.form,laydate = layui.laydate; //独立版的layer无需执行这一句
+		  var table = layui.table;           
+		  table.render({//方法级渲染
+		    elem: '#tableGrid',
+		    url: '/historyDeal/profitLossList',
+		    cellMinWidth: 80, //全局定义常规单元格的最小宽度，layui 2.2.1 新增
+		    cols: [[   
+		      {checkbox: true, fixed: true},    
+		      {field:'stockCode',title: '股票代码 '}, 
+		      {field:'stockName', title: '股票名称'},  
+		      {field:'tradingDate',  title: '交易日期 '},              
+		      {field:'profitLoss', title: '实现盈亏'},      
+		      {field:'profitLossPercent',  title: '盈亏比例（%）'},     
+		    ]],         
+		    id: 'tableGrid',        
+		    page: true,
+		    height : 'full-70'    
+		  });                      
+		         
+		  laydate.render({//起始日期   
+			  elem: '#startDate',
+			  done: function(value, date, endDate){
+				  if(null != value && value.length > 0){
+						var startTime = new Date(value).getTime();
+						var endTime = new Date($('#endDate').val()).getTime();
+						if (startTime > endTime) {   //日期不符合，赋初始值  
+							layer.msg('起始日期不能大于截止日期',{
+			              		icon: 2,   //1成功（绿色）2错误（红叉） 3问号（黄色）4 锁（灰色）  5伤心脸（红色）  
+			              		time: 1000 //2秒关闭（如果不配置，默认是3秒）
+			                }, function(){    
+			                	var myDate = new Date();
+							    var year = myDate.getFullYear();
+							    var month = myDate.getMonth()+1;
+							    if(month < 10){
+								   month = "0"+month;
+							    }
+							    var day = myDate.getDate();
+							    if(day < 10){
+								   day = "0"+day;
+							    }
+							    var lastYear = year-1;    
+							    $("#startDate").val(lastYear+"-01-01");   
+			                });        
+						}else{
+							window.setTimeout("loadData()",10);  //延迟加载，防止改变的日期没有赋完值
+						}
+				  }else{
+					  window.setTimeout("loadData()",10);  //延迟加载，防止改变的日期没有赋完值  
+				  } 
+			  }
+		  });
+		  
+		  laydate.render({//截止日期
+			  elem: '#endDate',          
+			  done: function(value, date, endDate){
+				  if(null != value && value.length > 0){
+						var endTime = new Date(value).getTime();
+						var startTime = new Date($('#startDate').val()).getTime();
+						if (endTime < startTime) {    //日期不符合，赋初始值
+							layer.msg('截止日期不能小于起始日期',{
+			              		icon: 2,   //1成功（绿色）2错误（红叉） 3问号（黄色）4 锁（灰色）  5伤心脸（红色）  
+			              		time: 1000 //2秒关闭（如果不配置，默认是3秒）
+			                }, function(){   
+			                	var myDate = new Date();
+							    var year = myDate.getFullYear();
+							    var month = myDate.getMonth()+1;
+							    if(month < 10){
+								   month = "0"+month;
+							    }
+							    var day = myDate.getDate();
+							    if(day < 10){
+								   day = "0"+day;
+							    }     
+							    $("#endDate").val(year+"-"+month+"-"+day);   
+			                });    
+						}else{
+							window.setTimeout("loadData()",10);  //延迟加载，防止改变的日期没有赋完值 
+						}
+				  }else{
+					  window.setTimeout("loadData()",10);  //延迟加载，防止改变的日期没有赋完值              
+				  } 
+			  }       
+		  });  
+		  
+		  form.on('select(statisticalMethods)', function(data){   //下拉选择改变触发
+			  loadData();
+		  });     
+		  
+		  var $ = layui.$, active = {
+		      reload: function(){        //执行重载  
+		    	  loadData(); 
+		      }
+		  };    
+				        
+		  $('.layui-form .layui-btn').on('click', function(){   //按钮监听事件
+		        var type = $(this).data('type');                     //根据data-type定义调用active的对应方法
+		        active[type] ? active[type].call(this) : ''; 
+		  });
+				  
+		  //搜索条件框div添加回车监听事件  
+		  $("#inputSearch").bind("keydown",function(e){   
+			    var theEvent = e || window.event;     // 兼容FF和IE和Opera    
+			    var code = theEvent.keyCode || theEvent.which || theEvent.charCode;    
+			    if (code == 13) {                     //回车执行查询
+			    	loadData();              
+			    }    
+		   });      
+		  
+		   layui.form.render("select");
+		   loadTotalMoney();
+	   });
+	   
+	   function loadTotalMoney(){       
+		   var inputSearch = layui.$('#inputSearch').val().trim();   
+           var startDate = layui.$("#startDate").val();     
+		   var endDate = layui.$("#endDate").val();   
+		   layui.$.ajax({  
+	   			url:"/historyDeal/getTotalMoney",
+	   			type: 'POST',
+	   			data:{"inputSearch":inputSearch,"startDate":startDate,"endDate":endDate},
+	   			success:function(data){
+	   				console.log(data);  
+		        	if(null != data){       
+		   			 	data = JSON.parse(data);        
+		   			    layui.$("#totalMoney").text(data.profitLoss);     
+		        	}else{
+		        		layui.$("#totalMoney").text("0");     
+		        		layer.msg('加载总金额失败',{
+		              		 icon: 5,   //1成功（绿色）2错误（红叉） 3问号（黄色）4 锁（灰色）  5伤心脸（红色）  
+		              		 time: 1000 //2秒关闭（如果不配置，默认是3秒）
+		                });
+		        	} 
+	   			},  
+	   			error:function(errorData){
+	   				layui.$("#totalMoney").text("0");         
+	        		layer.msg('加载总金额错误',{
+	              		 icon: 2,   //1成功（绿色）2错误（红叉） 3问号（黄色）4 锁（灰色）  5伤心脸（红色）  
+	              		 time: 1000 //2秒关闭（如果不配置，默认是3秒）
+	                }); 
+	   			}
+	   		});       
+	   }
+	      
+	   function loadData(){
+		   loadTotalMoney();
+		   var inputSearch = layui.$('#inputSearch');   
+           var startDate = layui.$("#startDate").val();     
+		   var endDate = layui.$("#endDate").val(); 
+		   var statisticalMethods = layui.$("#statisticalMethods").val(); 
+		   layui.table.reload('tableGrid', {       
+	         page: {
+	           curr: 1 //重新从第 1 页开始
+	         },
+	         where: {
+	        	 inputSearch: inputSearch.val().trim(),
+	        	 startDate:startDate,
+	        	 endDate:endDate,
+	        	 statisticalMethods:statisticalMethods   
+	         }   
+	      }, 'data');
+	   } 
+	   
+	</script>
+
+</body>
+
+</html>

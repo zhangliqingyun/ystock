@@ -47,6 +47,56 @@ public class HistoryDealService {
 			e.printStackTrace();
 			return null;
 		}
+	}
+
+    /**
+     * @Description 盈亏一览汇总数据
+     * @author 张立增
+     * @Date 2020年2月23日 下午6:46:26
+     */
+	public String profitLossList(String page, String limit, String inputSearch, String startDate, String endDate,String statisticalMethods) {
+		try {
+			Integer startIndex = PageUtils.getStartIndex(page, limit);
+			Map<String, Object> data = new HashedMap<String, Object>();
+	        data.put("startIndex",startIndex);
+	        data.put("pageSize", Integer.parseInt(limit));
+	        data.put("inputSearch", inputSearch);
+	        data.put("startDate", startDate);
+	        data.put("endDate", endDate);
+	        List<HistoryDeal> list = null;
+	        Integer totalListSize = 0;
+	        if("股票汇总".equals(statisticalMethods)) {  
+	        	list = historyDealDao.profitLossListByType(data);
+				totalListSize = historyDealDao.getTotalListSizeByType(data);   //得到所有的数量
+	        }else {
+	        	list = historyDealDao.profitLossListByDate(data);
+				totalListSize = historyDealDao.getTotalListSizeByDate(data);   //得到所有的数量
+	        }
+			Object object = PageUtils.makeObject(list,totalListSize);
+			return JSONObject.toJSONString(object);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+    /**
+     * @Description 得到总盈亏金额
+     * @author 张立增
+     * @Date 2020年2月23日 下午8:14:38
+     */
+	public String getTotalMoney(String inputSearch, String startDate, String endDate) {
+		try {
+			Map<String, Object> data = new HashedMap<String, Object>();
+	        data.put("inputSearch", inputSearch);
+	        data.put("startDate", startDate);
+	        data.put("endDate", endDate);
+	        HistoryDeal historyDeal = historyDealDao.getTotalMoney(data); 
+			return JSONObject.toJSONString(historyDeal);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
 	}  
 	
 	

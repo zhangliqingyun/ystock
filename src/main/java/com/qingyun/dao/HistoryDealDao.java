@@ -28,6 +28,16 @@ public interface HistoryDealDao {
 
 	Integer getTotalListSize(Map<String, Object> data);
 
+	List<HistoryDeal> profitLossListByDate(Map<String, Object> data);
+
+	Integer getTotalListSizeByDate(Map<String, Object> data);
+
+	List<HistoryDeal> profitLossListByType(Map<String, Object> data);
+
+	Integer getTotalListSizeByType(Map<String, Object> data);
+
+	HistoryDeal getTotalMoney(Map<String, Object> data);
+
 	
 
 }
