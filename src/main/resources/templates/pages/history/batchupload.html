@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="renderer" content="webkit" />
+    <title>批量导入</title>  
+    <link rel="shortcut icon" th:href="@{/common/images/headlogo.ico}"/>         
+    <link th:href="@{/hplus/css/plugins/layui/css/layui.css?v=4.1.0}" rel="stylesheet" />
+    <link rel="stylesheet" th:href="@{/bootstrap/css/bootstrap.min.css}"/>  
+    <link rel="stylesheet" th:href="@{/plugins/fileinput/css/fileinput.min.css}"/>
+	<link rel="stylesheet" th:href="@{/plugins/miniui/res/fonts/font-awesome/css/font-awesome.min.css}"/>
+	<link rel="stylesheet" th:href="@{/plugins/fileinput/themes/explorer-fa/theme.css}"/>
+</head> 
+<body>   
+    <div id="tipDiv" style="height:40px;line-height:40px;padding-left:20px">支持多股票数据的批量导入 &nbsp; &nbsp; &nbsp; &nbsp;    <a href="#" onclick="downTemplate()">模板下载</a></div>
+    <div style="height:100%;width:100%;" id="fileDiv">
+       <input id="file" name="file" type="file" multiple="multiple" class="file-loading" ></input>   
+    </div>
+    <div id="uploadMessageDiv" style="height:100%;width:100%;display:none">
+       <span class="fa fa-close" style="float:left;color:gray;font-size:16px;cursor:pointer;float:right" onclick="hiddenUploadMessage()" title="关闭"></span>        
+       <div id="uploadMessageContent">上传文本信息</div>      
+    </div>
+		         
+</body>
+<script th:src="@{/hplus/js/jquery.min.js?v=2.1.4}"></script>     
+<script th:src="@{/hplus/css/plugins/layui/layui.js}"></script>  
+<script th:src="@{/bootstrap/js/bootstrap.min.js}" type="text/javascript"></script>
+<script th:src="@{/plugins/fileinput/js/fileinput.min.js}" type="text/javascript"></script>
+<script th:src="@{/plugins/fileinput/js/zh.js}" type="text/javascript"></script>
+<script th:src="@{/plugins/fileinput/themes/fa/theme.js}" type="text/javascript"></script>
+<script th:src="@{/plugins/fileinput/themes/explorer-fa/theme.js}" type="text/javascript"></script>
+    
+<script type="text/javascript">
+ /*<![CDATA[*/
+	 
+	var layer = null;        
+	layui.use(['layer', 'table'], function(){
+		var $ = layui.jquery, layer = layui.layer; //独立版的layer无需执行这一句
+		$("#file").fileinput({            
+			language : 'zh',         
+			uploadUrl : '/history/uploadStockData',
+			maxFileCount : 1,//表示允许同时上传的最大文件个数   
+			maxFileSize:20480000,       
+			showCaption : true,//是否显示标题
+			browseClass : "btn btn-primary", //按钮样式
+			showPreview:true,       
+		    allowedFileExtensions: ["xls", "xlsx"],   
+			uploadAsync:true,                  
+			msgFilesTooLess:'您必须至少选择{n}个文件才能上传，请点击“浏览”选择您需要上传的文件！',
+			msgFilesTooMany:'超过了单次上传最大文件数{m}个，请分批次上传！',
+			previewFileIcon: '<i class="fa fa-file"></i>',
+			browseLabel : "浏览",
+			msgSelected:'添加了{n}个文件',   
+			dropZoneTitle:'拖拽文件到这里 …<br/>最多支持1个文件上传<br/>',
+		    uploadExtraData:function (previewId, index) {    
+		          var data = {   
+		             
+		          };
+		          return data;     
+		     },
+			 previewFileIconSettings: {
+			        'doc': '<i class="fa fa-file-word-o text-primary"></i>',
+			        'xls': '<i class="fa fa-file-excel-o text-success"></i>',
+			        'ppt': '<i class="fa fa-file-powerpoint-o text-danger"></i>',
+			        'jpg': '<i class="fa fa-file-photo-o text-warning"></i>',
+			        'pdf': '<i class="fa fa-file-pdf-o text-danger"></i>',
+			        'zip': '<i class="fa fa-file-archive-o text-muted"></i>',
+			        'htm': '<i class="fa fa-file-code-o text-info"></i>',
+			        'txt': '<i class="fa fa-file-text-o text-info"></i>',
+			        'mov': '<i class="fa fa-file-movie-o text-warning"></i>',
+			        'mp3': '<i class="fa fa-file-audio-o text-warning"></i>',
+			    }, 
+			    layoutTemplates:{       //是否显示预览下的上传按钮      
+			    	actionUpload:''
+			    },
+			    previewFileExtSettings: {
+			        'doc': function(ext) {
+			            return ext.match(/(doc|docx)$/i);
+			        },
+			        'xls': function(ext) {
+			            return ext.match(/(xls|xlsx)$/i);
+			        },
+			        'ppt': function(ext) {
+			            return ext.match(/(ppt|pptx)$/i);
+			        },
+			        'zip': function(ext) {
+			            return ext.match(/(zip|rar|tar|gzip|gz|7z)$/i);
+			        },
+			        'htm': function(ext) {
+			            return ext.match(/(php|js|css|htm|html)$/i);
+			        },
+			        'txt': function(ext) {
+			            return ext.match(/(txt|ini|md)$/i);
+			        },
+			        'mov': function(ext) {
+			            return ext.match(/(avi|mpg|mkv|mov|mp4|3gp|webm|wmv)$/i);
+			        },
+			        'mp3': function(ext) {
+			            return ext.match(/(mp3|wav)$/i);
+			        },
+			    }
+		});   
+		
+		$("#file").on('fileuploaded', function(event, data, previewId, index) {           
+		    if(data.response.type == 200){  
+		   		layer.msg('数据导入成功',{
+             		 icon: 1,   //1成功（绿色）2错误（红叉） 3问号（黄色）4 锁（灰色）  5伤心脸（红色）  
+             		 time: 1000 //2秒关闭（如果不配置，默认是3秒）
+			   	 }, function(){
+	                 var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+	                 parent.layer.close(index); //再执行关闭
+	            });            
+		   	}else{
+		   		layer.msg(data.response.msg,{   
+             		 icon: 5,   //1成功（绿色）2错误（红叉） 3问号（黄色）4 锁（灰色）  5伤心脸（红色）  
+             		 time: 3000 //2秒关闭（如果不配置，默认是3秒）
+               });       
+		   	}                 
+		});    
+	});
+    
+	
+	function downTemplate(){ 
+	    var url = "/stockData/downTemplate";       
+	    window.open(url);  
+    }
+ 
+    function showUploadMessage(){
+	    $("#uploadMessageDiv").show();
+	    $("#tipDiv").hide();
+	    $("#fileDiv").hide(); 
+    }
+ 
+    function hiddenUploadMessage(){
+	    $("#uploadMessageDiv").hide();
+	    $("#tipDiv").show();
+	    $("#fileDiv").show();   
+    }    
+	
+ /*]]>*/
+</script>
+</html>

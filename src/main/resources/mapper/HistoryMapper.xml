@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.qingyun.dao.HistoryDao">
+
+	<resultMap type="com.qingyun.entity.History" id="History">
+		<id property="id" column="id"/>
+		<result property="stockCode" column="stock_code"/>
+		<result property="stockName" column="stock_name"/>
+		<result property="dataDate" column="data_date"/>
+		<result property="nowPrice" column="now_price"/>
+		<result property="openPrice" column="open_price"/>
+		<result property="diffPrice" column="diff_price"/>
+		<result property="highPrice" column="high_price"/>
+		<result property="lowPrice" column="low_price"/>
+		<result property="diffRate" column="diff_rate"/>
+		<result property="num" column="num"/>
+		<result property="price" column="price"/>
+	</resultMap>
+
+    <insert id="saveStockData" parameterType="java.util.List" useGeneratedKeys="true" keyProperty="id">
+	    insert into
+	        stock.history(stock_code,stock_name,data_date,
+	                      open_price,high_price,low_price,now_price,
+	                      diff_price,diff_rate,num,price)
+	    values
+	    <foreach collection="list" item="item" index="index" separator=","> 
+	        (#{item.stockCode},#{item.stockName},#{item.dataDate,jdbcType=DATE},
+	         #{item.openPrice},#{item.highPrice},#{item.lowPrice},#{item.nowPrice},
+	         #{item.diffPrice},#{item.diffRate},#{item.num},#{item.price}
+	        )
+	    </foreach> 
+	</insert>
+
+
+	<delete id="deleteByCode" parameterType="java.lang.String">
+		delete from stock.history where stock_code=#{stockCode}
+	</delete>
+
+	<select id="basicStockAll"   parameterType="java.lang.String" resultMap="History">
+		SELECT distinct stock_code,stock_name FROM stock.history GROUP BY stock_code
+	</select>
+
+	<select id="stockDataList" parameterType="map" resultType="com.qingyun.entity.HistoryRespon">
+		SELECT temp.stock_code stockCode,temp.stock_name stockName,temp.avg_price avgPrice,temp.diff_price diffPrice,temp.diff_rate diffRate,temp.num,ROUND(temp.num/temp.days,0) AS everyDayNum,temp.price,
+		ROUND(temp.price/temp.days,0) AS everyDayPrice,temp.up_price upPrice,temp.down_price downPrice,temp.center_price centerPrice,temp.up_price - temp.down_price AS upDownPrice,temp.up_price - temp.down_price - temp.center_price AS upDownCenterPrice,
+		ROUND((temp.up_price/temp.down_price)*100,2) as upForDownPriceRate, ROUND((temp.down_price/temp.up_price)*100,2) as downForUpPriceRate,
+		ROUND(((temp.up_price - temp.down_price - temp.center_price)/temp.up_price)*100,2) as upDownCenterForUpPriceRate, ROUND(((temp.up_price - temp.down_price - temp.center_price)/temp.down_price)*100,2) as upDownCenterForDownPriceRate
+		FROM
+		(
+			SELECT stock_code,stock_name,ROUND(AVG(now_price),2) AS avg_price,SUM(diff_price) diff_price,ROUND(SUM(diff_rate),2) AS diff_rate,
+			SUM(num) num,SUM(price) price,COUNT(1) AS days,SUM(CASE WHEN diff_price <![CDATA[>]]> 0 THEN price ELSE 0 END) up_price,SUM(CASE WHEN diff_price <![CDATA[<]]> 0 THEN price ELSE 0 END) down_price,SUM(CASE WHEN diff_price = 0 THEN price ELSE 0 END) center_price
+			FROM stock.history where 1 = 1
+			<if test="stockCode != null and stockCode != ''">
+				and stock_code =#{stockCode}
+			</if>
+			<if test="startDate != null and startDate != ''">
+				and data_date<![CDATA[>=]]> #{startDate}
+			</if>
+			<if test="endDate != null and endDate != ''">
+				and data_date<![CDATA[<=]]> #{endDate}
+			</if>
+			GROUP BY stock_code
+		) temp order by upDownCenterForUpPriceRate desc
+		limit #{startIndex} , #{pageSize}
+	</select>
+
+	<select id="getNewStockDataList" parameterType="map" resultType="com.qingyun.entity.HistoryRespon">
+		SELECT a.data_date dataDate ,a.stock_code stockCode,a.now_price nowPrice,a.num newNum,a.price newPrice
+		FROM stock.history a
+		JOIN (
+			SELECT stock_code, MAX(data_date) AS data_date
+			FROM stock.history where 1 = 1
+			<if test="stockCode != null and stockCode != ''">
+				and stock_code =#{stockCode}
+			</if>
+			<if test="startDate != null and startDate != ''">
+				and data_date<![CDATA[>=]]> #{startDate}
+			</if>
+			<if test="endDate != null and endDate != ''">
+				and data_date<![CDATA[<=]]> #{endDate}
+			</if>
+			GROUP BY stock_code
+		) b ON a.stock_code = b.stock_code AND a.data_date = b.data_date
+
+	</select>
+
+	<select id="getTotalListSize"  parameterType="java.lang.String" resultType="Integer">
+		SELECT COUNT(stock_code) FROM (
+		   SELECT DISTINCT stock_code FROM stock.history
+				<if test="stockCode != null and stockCode != ''">
+					where stock_code =#{stockCode}
+				</if>
+		   GROUP BY stock_code
+		) temp
+	</select>
+
+</mapper>

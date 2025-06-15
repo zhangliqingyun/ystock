@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="renderer" content="webkit" />
+    <title>用户管理</title>  
+    <link rel="shortcut icon" th:href="@{/common/images/headlogo.ico}"/>         
+    <link th:href="@{/hplus/css/plugins/layui/css/layui.css?v=4.1.0}" rel="stylesheet" />
+</head> 
+  
+<body>
+   <div style="margin-top:10px;margin-left:10px" class="layui-form">
+
+	   <div class="layui-input-inline" style="width: 150px;">
+			<select name="stockCode" id="stockCode" lay-verify="stockCode" lay-filter="stockCode">
+				<option value="">股票选择</option>
+			</select>
+		</div>
+		<div class="layui-input-inline" style="width: 150px;">
+			<input type="text" name="startDate" id="startDate" lay-verify="startDate" placeholder="起始日期" autocomplete="off" class="layui-input">
+		</div>
+		<div class="layui-input-inline">&nbsp;&nbsp;-&nbsp;&nbsp;</div>
+		<div class="layui-input-inline" style="width: 150px;">
+			<input type="text" name="endDate" id="endDate" lay-verify="endDate" placeholder="截止日期" autocomplete="off" class="layui-input">
+		</div>
+		<button class="layui-btn" data-type="batchUpload"><i class="layui-icon">&#xe62f;</i>批量导入</button>
+	</div>     
+	 
+	<table class="layui-hide" id="stockDataTableGrid" lay-filter="stockData"></table>
+	<script th:src="@{/hplus/js/jquery.min.js?v=2.1.4}"></script>     
+    <script th:src="@{/hplus/css/plugins/layui/layui.js}"></script>   
+
+	<script>
+	   var layer = null;     
+	   layui.use(['layer', 'laydate','table','form'], function(){
+		  var $ = layui.jquery, layer = layui.layer, //独立版的layer无需执行这一句
+		   laydate = layui.laydate,
+		   form = layui.form,
+		   table = layui.table;
+		   table.render({//方法级渲染
+		    elem: '#stockDataTableGrid',
+		    url: '/history/stockDataList',
+		    cols: [[
+		      {field:'stockCode', align: 'right',width:90, title: '股票代码'},
+		      {field:'stockName',  align: 'right',width:90,title: '股票名称'},
+		      {field:'dataDate',  align: 'right',width:120,title: '最近交易时间',templet:'<div>{{ layui.util.toDateString(d.dataDate, "yyyy-MM-dd") }}</div>'},
+		      {field:'nowPrice', align: 'right',width:90, title: '最近股价'},
+		      {field:'avgPrice', align: 'right',width:90, title: '平均股价'},
+		      {field:'diffPrice',  align: 'right',width:90,title: '总的涨额'},
+		      {field:'diffRate',  align: 'right',width:100,title: '总的涨幅%'},
+		      {field:'num',  align: 'right',width:150,title: '总的成交手数',templet: function(d){
+					  return d.num.toLocaleString();
+				  }},
+		      {field:'everyDayNum',  align: 'right',width:150,title: '每天平均成交手数',templet: function(d){
+					  return d.everyDayNum.toLocaleString();
+				  }},
+		      {field:'newNum', align: 'right', width:150,title: '最新成交手数',templet: function(d){
+					  return d.newNum.toLocaleString();
+				  }},
+		      {field:'price', align: 'right',width:150, title: '总的成交量',templet: function(d){
+					  return d.price.toLocaleString();
+				  }},
+		      {field:'everyDayPrice', align: 'right',width:150, title: '每天平均成交量',templet: function(d){
+					  return d.everyDayPrice.toLocaleString();
+				  }},
+		      {field:'newPrice',  align: 'right',width:150,title: '最近成交量',templet: function(d){
+					  return d.newPrice.toLocaleString();
+				  }},
+		      {field:'upPrice',  align: 'right',width:150,title: '上涨时总的成交量',templet: function(d){
+					  return d.upPrice.toLocaleString();
+				  }},
+		      {field:'downPrice', align: 'right', width:150,title: '下跌时总的成交量',templet: function(d){
+					  return d.downPrice.toLocaleString();
+				  }},
+		      {field:'centerPrice', align: 'right', width:150,title: '平的总的成交量',templet: function(d){
+					  return d.centerPrice.toLocaleString();
+				  }},
+		      {field:'upDownPrice', align: 'right',width:210, title: '上涨与下跌总成交量差值',templet: function(d){
+					  return d.upDownPrice.toLocaleString();
+				  }},
+		      {field:'upDownCenterPrice', align: 'right',width:220, title: '上涨与下跌、平的成交量差值',templet: function(d){
+					  return d.upDownCenterPrice.toLocaleString();
+				  }},
+				{field:'upForDownPriceRate', align: 'right',width:200, title: '上涨总量/下跌总量%'},
+				{field:'downForUpPriceRate', align: 'right',width:200, title: '下跌总量/上涨总量%'},
+				{field:'upDownCenterForUpPriceRate', align: 'right',width:350, title: '上涨与下跌、平的成交量差值/上涨时总成交量%'},
+				{field:'upDownCenterForDownPriceRate', align: 'right',width:350, title: '上涨与下跌、平的成交量差值/下跌时总成交量%'},
+		    ]],
+		    id: 'stockDataTable',  
+		    page: true,
+		    height : 'full-70'    
+		  });
+
+
+		   laydate.render({//起始日期
+			   elem: '#startDate',
+			   done: function(value, date, endDate){
+				   if(null != value && value.length > 0){
+					   var startTime = new Date(value).getTime();
+					   var endTime = new Date($('#endDate').val()).getTime();
+					   if (startTime > endTime) {   //日期不符合，赋初始值
+						   layer.msg('起始日期不能大于截止日期',{
+							   icon: 2,   //1成功（绿色）2错误（红叉） 3问号（黄色）4 锁（灰色）  5伤心脸（红色）
+							   time: 1000 //2秒关闭（如果不配置，默认是3秒）
+						   }, function(){
+							   var myDate = new Date();
+							   var year = myDate.getFullYear();
+							   var month = myDate.getMonth()+1;
+							   if(month < 10){
+								   month = "0"+month;
+							   }
+							   var day = myDate.getDate();
+							   if(day < 10){
+								   day = "0"+day;
+							   }
+							   var lastYear = year-1;
+							   $("#startDate").val(lastYear+"-01-01");
+						   });
+					   }else{
+						   window.setTimeout("loadData()",10);  //延迟加载，防止改变的日期没有赋完值
+					   }
+				   }else{
+					   window.setTimeout("loadData()",10);  //延迟加载，防止改变的日期没有赋完值
+				   }
+			   }
+		   });
+
+		   laydate.render({//截止日期
+			   elem: '#endDate',
+			   done: function(value, date, endDate){
+				   if(null != value && value.length > 0){
+					   var endTime = new Date(value).getTime();
+					   var startTime = new Date($('#startDate').val()).getTime();
+					   if (endTime < startTime) {    //日期不符合，赋初始值
+						   layer.msg('截止日期不能小于起始日期',{
+							   icon: 2,   //1成功（绿色）2错误（红叉） 3问号（黄色）4 锁（灰色）  5伤心脸（红色）
+							   time: 1000 //2秒关闭（如果不配置，默认是3秒）
+						   }, function(){
+							   var myDate = new Date();
+							   var year = myDate.getFullYear();
+							   var month = myDate.getMonth()+1;
+							   if(month < 10){
+								   month = "0"+month;
+							   }
+							   var day = myDate.getDate();
+							   if(day < 10){
+								   day = "0"+day;
+							   }
+							   $("#endDate").val(year+"-"+month+"-"+day);
+						   });
+					   }else{
+						   window.setTimeout("loadData()",10);  //延迟加载，防止改变的日期没有赋完值
+					   }
+				   }else{
+					   window.setTimeout("loadData()",10);  //延迟加载，防止改变的日期没有赋完值
+				   }
+			   }
+		   });
+
+		   form.on('select(stockCode)', function(data){   //下拉选择改变触发
+			   loadData();
+		   });
+
+
+		   var $ = layui.$, active = {
+		    reload: function(){        //执行重载
+		    	loadData();
+		    },
+		    batchUpload: function(){        //批量导入
+		    	batchUpload();
+		    }
+		  };    
+		     
+		  $('.layui-form .layui-btn').on('click', function(){   //按钮监听事件
+		     var type = $(this).data('type');                     //根据data-type定义调用active的对应方法
+		     active[type] ? active[type].call(this) : ''; 
+		  });
+
+		  // initDate();            //给日期赋初始值
+		   initStockCode();       //初始化股票下拉
+
+		});
+
+
+	   //给日期赋初始值
+	   function initDate(){
+		   var myDate = new Date();
+		   var year = myDate.getFullYear();
+		   var month = myDate.getMonth()+1;
+		   if(month < 10){
+			   month = "0"+month;
+		   }
+		   var day = myDate.getDate();
+		   if(day < 10){
+			   day = "0"+day;
+		   }
+		   var lastYear = year-1;
+		   $("#startDate").val(lastYear+"-01-01");
+		   $("#endDate").val(year+"-"+month+"-"+day);
+	   }
+
+	   function initStockCode(){
+		   layui.$.ajax({
+			   url:"/history/basicStockAllList",
+			   type: 'POST',
+			   async: false,
+			   success:function(data){
+				   if(null != data){
+					   data = JSON.parse(data);
+					   for(var i = 0;i < data.length;i++){
+						   layui.$('#stockCode').append(new Option(data[i].stockName, data[i].stockCode));// 下拉菜单里添加元素
+					   }
+					   layui.form.render("select");
+				   }else{
+					   layer.msg('股票数据初始化失败',{
+						   icon: 5,   //1成功（绿色）2错误（红叉） 3问号（黄色）4 锁（灰色）  5伤心脸（红色）
+						   time: 1000 //2秒关闭（如果不配置，默认是3秒）
+					   });
+				   }
+			   },
+			   error:function(errorData){
+				   layer.msg('股票数据初始化错误',{
+					   icon: 2,   //1成功（绿色）2错误（红叉） 3问号（黄色）4 锁（灰色）  5伤心脸（红色）
+					   time: 1000 //2秒关闭（如果不配置，默认是3秒）
+				   });
+			   }
+		   });
+	   }
+	   
+	   function batchUpload(){
+		   parent.layer.open({        //加parent，在最外层显示弹窗，父页面需要加layer初始化        
+	   			closeBtn : 1,
+	   			type : 2,     
+	   			maxmin: true,
+	   			title : "批量导入股票数据",
+	   			skin : 'layui-layer-lan', //加上边框
+	   			area : [ '650px', '450px' ], //宽高
+	   			content :'/history/batchUploadPage',
+	   		    end: function(e){
+					loadData();
+	   		    }  
+ 		   });       
+	   }
+
+	   function loadData(){
+		   var startDate = $("#startDate").val();
+		   var endDate = $("#endDate").val();
+		   if(null != startDate && startDate.length > 0 && null != endDate && endDate.length > 0){
+			   var startTime = new Date(startDate).getTime();
+			   var endTime = new Date(endDate).getTime();
+			   if (endTime < startTime) {
+				   layer.msg('截止日期不能小于起始日期',{
+					   icon: 2,   //1成功（绿色）2错误（红叉） 3问号（黄色）4 锁（灰色）  5伤心脸（红色）
+					   time: 1000 //2秒关闭（如果不配置，默认是3秒）
+				   });
+				   return;
+			   }
+		   }
+		   var stockCode = layui.$("#stockCode").val();
+
+		   layui.table.reload('stockDataTable', {
+			   page: {
+				   curr: 1 //重新从第 1 页开始
+			   },
+			   where: {
+				   stockCode: stockCode,
+				   startDate:startDate,
+				   endDate:endDate
+			   }
+		   }, 'data');
+	   }
+	</script>
+
+</body>
+
+</html>

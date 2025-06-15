@@ -61,3 +61,22 @@ CREATE TABLE `history_deal` (
   `add_date` timestamp NULL DEFAULT NULL COMMENT '录入系统日期',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+
+
+CREATE TABLE `history` (
+                           `id` int(11) NOT NULL AUTO_INCREMENT,
+                           `stock_code` varchar(10) DEFAULT NULL COMMENT '股票代码',
+                           `stock_name` varchar(40) DEFAULT NULL COMMENT '股票名称',
+                           `data_date` date DEFAULT NULL COMMENT '股票交易时间',
+                           `open_price` decimal(10,2) DEFAULT NULL COMMENT '开盘价格',
+                           `high_price` decimal(10,2) DEFAULT NULL COMMENT '最高价格',
+                           `low_price` decimal(10,2) DEFAULT NULL COMMENT '最低价',
+                           `now_price` decimal(10,2) DEFAULT NULL COMMENT '收盘价',
+                           `diff_price` decimal(10,2) DEFAULT NULL COMMENT '涨跌',
+                           `diff_rate` decimal(10,4) DEFAULT NULL COMMENT '涨跌幅%',
+                           `num` decimal(20,0) DEFAULT NULL COMMENT '成交量',
+                           `price` decimal(20,0) DEFAULT NULL COMMENT '成交额',
+                           PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+
+
