@@ -26,6 +26,15 @@ public class HistoryRespon implements Serializable {
 	private BigDecimal num;              //总的成交手数
     private BigDecimal everyDayNum;      //每天平均成交手数
     private BigDecimal newNum;           //最新成交手数
+	private BigDecimal upNum;          //上涨时总的成交手数
+	private BigDecimal downNum;        //下跌时总的成交手数
+	private BigDecimal centerNum;      //不涨不跌总的成交手数
+	private BigDecimal upDownNum;      //上涨与下跌总成交量差手数
+	private BigDecimal upDownCenterNum; //上涨与下跌、平的成交手数差值
+	private BigDecimal upForDownNumRate; //上涨总手数/下跌总手数%
+	private BigDecimal downForUpNumRate; //下跌总手数/上涨总手数%
+	private BigDecimal upDownCenterForUpNumRate; //上涨与下跌、平的成交量差值/上涨时总成交手数%
+	private BigDecimal upDownCenterForDownNumRate; //上涨与下跌、平的成交量差值/下跌时总成交手数%
     private BigDecimal price;            //总的成交量
     private BigDecimal everyDayPrice;    //每天平均成交量
     private BigDecimal newPrice;         //最近成交量
@@ -38,6 +47,78 @@ public class HistoryRespon implements Serializable {
     private BigDecimal downForUpPriceRate; //下跌总量/上涨总量%
     private BigDecimal upDownCenterForUpPriceRate; //上涨与下跌、平的成交量差值/上涨时总成交量%
     private BigDecimal upDownCenterForDownPriceRate; //上涨与下跌、平的成交量差值/下跌时总成交量%
+
+	public BigDecimal getUpNum() {
+		return upNum;
+	}
+
+	public void setUpNum(BigDecimal upNum) {
+		this.upNum = upNum;
+	}
+
+	public BigDecimal getDownNum() {
+		return downNum;
+	}
+
+	public void setDownNum(BigDecimal downNum) {
+		this.downNum = downNum;
+	}
+
+	public BigDecimal getCenterNum() {
+		return centerNum;
+	}
+
+	public void setCenterNum(BigDecimal centerNum) {
+		this.centerNum = centerNum;
+	}
+
+	public BigDecimal getUpDownNum() {
+		return upDownNum;
+	}
+
+	public void setUpDownNum(BigDecimal upDownNum) {
+		this.upDownNum = upDownNum;
+	}
+
+	public BigDecimal getUpDownCenterNum() {
+		return upDownCenterNum;
+	}
+
+	public void setUpDownCenterNum(BigDecimal upDownCenterNum) {
+		this.upDownCenterNum = upDownCenterNum;
+	}
+
+	public BigDecimal getUpForDownNumRate() {
+		return upForDownNumRate;
+	}
+
+	public void setUpForDownNumRate(BigDecimal upForDownNumRate) {
+		this.upForDownNumRate = upForDownNumRate;
+	}
+
+	public BigDecimal getDownForUpNumRate() {
+		return downForUpNumRate;
+	}
+
+	public void setDownForUpNumRate(BigDecimal downForUpNumRate) {
+		this.downForUpNumRate = downForUpNumRate;
+	}
+
+	public BigDecimal getUpDownCenterForUpNumRate() {
+		return upDownCenterForUpNumRate;
+	}
+
+	public void setUpDownCenterForUpNumRate(BigDecimal upDownCenterForUpNumRate) {
+		this.upDownCenterForUpNumRate = upDownCenterForUpNumRate;
+	}
+
+	public BigDecimal getUpDownCenterForDownNumRate() {
+		return upDownCenterForDownNumRate;
+	}
+
+	public void setUpDownCenterForDownNumRate(BigDecimal upDownCenterForDownNumRate) {
+		this.upDownCenterForDownNumRate = upDownCenterForDownNumRate;
+	}
 
 	public String getStockCode() {
 		return stockCode;

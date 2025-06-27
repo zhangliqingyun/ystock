@@ -59,6 +59,25 @@
 		      {field:'newNum', align: 'right', width:150,title: '最新成交手数',templet: function(d){
 					  return d.newNum.toLocaleString();
 				  }},
+				{field:'upNum',  align: 'right',width:160,title: '上涨时总的成交手数',templet: function(d){
+						return d.upNum.toLocaleString();
+					}},
+				{field:'downNum', align: 'right', width:160,title: '下跌时总的成交手数',templet: function(d){
+						return d.downNum.toLocaleString();
+					}},
+				{field:'centerNum', align: 'right', width:150,title: '平的总的成交手数',templet: function(d){
+						return d.centerNum.toLocaleString();
+					}},
+				{field:'upDownNum', align: 'right',width:220, title: '上涨与下跌总成交手数差值',templet: function(d){
+						return d.upDownNum.toLocaleString();
+					}},
+				{field:'upDownCenterNum', align: 'right',width:240, title: '上涨与下跌、平的成交手数差值',templet: function(d){
+						return d.upDownCenterNum.toLocaleString();
+					}},
+				{field:'upForDownNumRate', align: 'right',width:200, title: '上涨总手数/下跌总手数%'},
+				{field:'downForUpNumRate', align: 'right',width:200, title: '下跌总手数/上涨总手数%'},
+				{field:'upDownCenterForUpNumRate', align: 'right',width:360, title: '上涨与下跌、平的成交手数差值/上涨时总成交手数%'},
+				{field:'upDownCenterForDownNumRate', align: 'right',width:360, title: '上涨与下跌、平的成交手数差值/下跌时总成交手数%'},
 		      {field:'price', align: 'right',width:150, title: '总的成交量',templet: function(d){
 					  return d.price.toLocaleString();
 				  }},

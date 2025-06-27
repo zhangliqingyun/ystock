@@ -44,11 +44,15 @@
 		SELECT temp.stock_code stockCode,temp.stock_name stockName,temp.avg_price avgPrice,temp.diff_price diffPrice,temp.diff_rate diffRate,temp.num,ROUND(temp.num/temp.days,0) AS everyDayNum,temp.price,
 		ROUND(temp.price/temp.days,0) AS everyDayPrice,temp.up_price upPrice,temp.down_price downPrice,temp.center_price centerPrice,temp.up_price - temp.down_price AS upDownPrice,temp.up_price - temp.down_price - temp.center_price AS upDownCenterPrice,
 		ROUND((temp.up_price/temp.down_price)*100,2) as upForDownPriceRate, ROUND((temp.down_price/temp.up_price)*100,2) as downForUpPriceRate,
-		ROUND(((temp.up_price - temp.down_price - temp.center_price)/temp.up_price)*100,2) as upDownCenterForUpPriceRate, ROUND(((temp.up_price - temp.down_price - temp.center_price)/temp.down_price)*100,2) as upDownCenterForDownPriceRate
+		ROUND(((temp.up_price - temp.down_price - temp.center_price)/temp.up_price)*100,2) as upDownCenterForUpPriceRate, ROUND(((temp.up_price - temp.down_price - temp.center_price)/temp.down_price)*100,2) as upDownCenterForDownPriceRate,
+		temp.up_num upNum,temp.down_num downNum,temp.center_num centerNum,temp.up_num - temp.down_num AS upDownNum,temp.up_num - temp.down_num - temp.center_num AS upDownCenterNum,
+		ROUND((temp.up_num/temp.down_num)*100,2) as upForDownNumRate, ROUND((temp.down_num/temp.up_num)*100,2) as downForUpNumRate,
+		ROUND(((temp.up_num - temp.down_num - temp.center_num)/temp.up_num)*100,2) as upDownCenterForUpNumRate, ROUND(((temp.up_num - temp.down_num - temp.center_num)/temp.down_num)*100,2) as upDownCenterForDownNumRate
 		FROM
 		(
 			SELECT stock_code,stock_name,ROUND(AVG(now_price),2) AS avg_price,SUM(diff_price) diff_price,ROUND(SUM(diff_rate),2) AS diff_rate,
-			SUM(num) num,SUM(price) price,COUNT(1) AS days,SUM(CASE WHEN diff_price <![CDATA[>]]> 0 THEN price ELSE 0 END) up_price,SUM(CASE WHEN diff_price <![CDATA[<]]> 0 THEN price ELSE 0 END) down_price,SUM(CASE WHEN diff_price = 0 THEN price ELSE 0 END) center_price
+			SUM(num) num,SUM(price) price,COUNT(1) AS days,SUM(CASE WHEN diff_price <![CDATA[>]]> 0 THEN price ELSE 0 END) up_price,SUM(CASE WHEN diff_price <![CDATA[<]]> 0 THEN price ELSE 0 END) down_price,SUM(CASE WHEN diff_price = 0 THEN price ELSE 0 END) center_price,
+		    SUM(CASE WHEN diff_price <![CDATA[>]]> 0 THEN num ELSE 0 END) up_num,SUM(CASE WHEN diff_price <![CDATA[<]]> 0 THEN num ELSE 0 END) down_num,SUM(CASE WHEN diff_price = 0 THEN num ELSE 0 END) center_num
 			FROM stock.history where 1 = 1
 			<if test="stockCode != null and stockCode != ''">
 				and stock_code =#{stockCode}
@@ -60,7 +64,7 @@
 				and data_date<![CDATA[<=]]> #{endDate}
 			</if>
 			GROUP BY stock_code
-		) temp order by upDownCenterForUpPriceRate desc
+		) temp order by upDownCenterForUpNumRate desc
 		limit #{startIndex} , #{pageSize}
 	</select>
 
